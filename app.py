@@ -4,6 +4,15 @@ import json
 
 # 1. UI Configuration (Futuristic Luxury)
 st.set_page_config(page_title="WAFEEQ AI", layout="wide", initial_sidebar_state="collapsed")
+# --- إخفاء شعارات Streamlit والفوتر ---
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 st.markdown("""
     <style>
     .stApp { background-color: #050505; color: #ffffff; }
