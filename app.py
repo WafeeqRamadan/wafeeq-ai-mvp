@@ -220,7 +220,95 @@ if st.session_state.current_page == 'home':
             # زر غير مرئي تقريباً فوق البطاقة لجعلها قابلة للضغط
             if st.button(f"Explore {p['name']}", key=f"btn_{p['name']}", use_container_width=True):
                 st.session_state.selected_platform = p['name']
-                st.session_state.current_page = 'products'
+               # ==========================================
+# صفحة عرض المنتجات ومولد الذكاء الاصطناعي
+# ==========================================
+elif st.session_state.current_page == 'products':
+    
+    # زر العودة
+    if st.button("← Back to Platforms"):
+        st.session_state.current_page = 'home'
+        st.rerun()
+        
+    st.markdown(f"<h2 style='font-family: \"Playfair Display\", serif; color: #fff;'>{st.session_state.selected_platform} — <span style='color:#d4af37;'>Trending Products</span></h2>", unsafe_allow_html=True)
+    st.write("TOP 3 PRODUCTS · RANKED BY AI TREND ANALYSIS")
+    st.write("---")
+    
+    # بيانات المنتجات الافتراضية (كما في تصميمك المرجعي)
+    platform_products = [
+        {
+            "id": 1,
+            "name": "Chronograph Elite Watch",
+            "category": "ACCESSORIES",
+            "score": "↗ 97",
+            "price": "$249.99",
+            "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+        },
+        {
+            "id": 2,
+            "name": "Minimalist Leather Tote",
+            "category": "FASHION",
+            "score": "↗ 94",
+            "price": "$189.00",
+            "image": "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+        },
+        {
+            "id": 3,
+            "name": "Wireless ANC Earbuds Pro",
+            "category": "ELECTRONICS",
+            "score": "↗ 91",
+            "price": "$159.99",
+            "image": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+        }
+    ]
+
+    # رسم شبكة المنتجات في 3 أعمدة
+    col1, col2, col3 = st.columns(3)
+    cols = [col1, col2, col3]
+
+    for i, prod in enumerate(platform_products):
+        with cols[i]:
+            # تصميم بطاقة المنتج
+            card = f"""
+            <div class="platform-card" style="padding: 15px;">
+                <img src="{prod['image']}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; color:#888; font-size:0.8rem; margin-bottom:10px;">
+                    <span>{prod['category']}</span>
+                    <span style="color:#d4af37; border: 1px solid #d4af37; padding: 2px 6px; border-radius: 4px;">{prod['score']}</span>
+                </div>
+                <h3 style="margin:0 0 10px 0; font-size:1.2rem; color:#fff;">{prod['name']}</h3>
+                <div style="color:#d4af37; font-family:'Playfair Display', serif; font-size:1.3rem; margin-bottom:15px;">{prod['price']}</div>
+            </div>
+            """
+            st.markdown(card, unsafe_allow_html=True)
+            
+            # زر توليد البراند (الذكاء الاصطناعي)
+            if st.button(f"✨ Generate Luxury Brand", key=f"gen_{prod['id']}"):
+                with st.spinner('AI is crafting your luxury brand strategy...'):
+                    # هنا يحدث السحر: نرسل الأمر لـ Gemini
+                    prompt = f"""
+                    You are a world-class luxury brand strategist. I have a trending e-commerce product: "{prod['name']}".
+                    Create a luxury brand identity for this product to sell it at a premium price.
+                    
+                    Format your response exactly like this:
+                    **Brand Name:** (Invent a short, elegant, Italian or French-sounding name)
+                    **Tagline:** (One short, luxurious sentence)
+                    **Target Audience:** (Who buys this premium product?)
+                    **Luxury Marketing Copy:** (A 3-sentence emotional, high-end description to use on the website)
+                    """
+                    
+                    try:
+                        response = model.generate_content(prompt)
+                        st.session_state[f"result_{prod['id']}"] = response.text
+                    except Exception as e:
+                        st.error("Error communicating with AI. Check your API key.")
+            
+            # عرض نتيجة الذكاء الاصطناعي إن وجدت تحت المنتج
+            if f"result_{prod['id']}" in st.session_state:
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.success("✨ Brand Generated Successfully!")
+                with st.expander("View Brand Strategy", expanded=True):
+                    st.write(st.session_state[f"result_{prod['id']}"])
                 st.rerun()
 
 # ==========================================
