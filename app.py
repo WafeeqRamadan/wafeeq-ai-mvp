@@ -10,6 +10,9 @@ hide_st_style = """
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
+            /* إخفاء العلامة المائية السحابية لـ Streamlit */
+            [class^="viewerBadge_"] {display: none !important;}
+            [data-testid="stDecoration"] {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
