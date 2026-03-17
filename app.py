@@ -12,22 +12,21 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. فحص والاتصال بالذكاء الاصطناعي
+# 2. الربط بالذكاء الاصطناعي (تم تصحيح اسم الموديل)
 # ==========================================
 if "GOOGLE_API_KEY" in st.secrets:
-    api_key = st.secrets["GOOGLE_API_KEY"]
     try:
-        genai.configure(api_key=api_key)
-        # استخدام موديل Flash لأنه الأسرع والأكثر استقراراً للنسخ الأولية
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+        # استخدام الاسم الأكثر استقراراً للموديل لضمان عدم حدوث خطأ 404
+        model = genai.GenerativeModel('gemini-pro') 
     except Exception as e:
         st.error(f"❌ فشل في تهيئة النظام: {e}")
 else:
-    st.error("⚠️ لم يتم العثور على المفتاح في الخزنة! تأكد من إضافته في Secrets باسم GOOGLE_API_KEY")
+    st.error("⚠️ يرجى إضافة GOOGLE_API_KEY في Secrets.")
     st.stop()
 
 # ==========================================
-# 3. CSS الفخامة والذهبي (Luxury UI)
+# 3. CSS الفخامة (Luxury UI)
 # ==========================================
 luxury_style = """
 <style>
@@ -46,7 +45,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 .hero-title {
     font-family: 'Playfair Display', serif;
-    font-size: 4rem;
+    font-size: 3.5rem;
     text-align: center;
     color: #ffffff;
     margin-top: 1rem;
@@ -56,16 +55,13 @@ html, body, [data-testid="stAppViewContainer"] {
 .platform-card {
     background-color: #0f0f0f;
     border: 1px solid #1a1a1a;
-    border-radius: 15px;
-    padding: 25px;
-    transition: 0.4s;
-    height: 280px;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    padding: 20px;
+    transition: 0.3s;
+    height: 250px;
 }
-.platform-card:hover { border-color: #d4af37; background-color: #121212; transform: translateY(-5px); }
-.platform-icon { font-size: 2.2rem; color: #d4af37; margin-bottom: 15px; }
-.platform-name { font-size: 1.5rem; font-weight: 700; color: #fff; }
-.platform-stats { color: #d4af37; font-weight: 700; font-size: 0.8rem; margin-top: 10px; }
+.platform-card:hover { border-color: #d4af37; background-color: #121212; }
+.platform-icon { font-size: 2rem; color: #d4af37; margin-bottom: 10px; }
 
 div.stButton > button {
     background-color: #d4af37;
@@ -74,7 +70,6 @@ div.stButton > button {
     border: none;
     border-radius: 4px;
     width: 100%;
-    transition: 0.3s;
 }
 div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
 
@@ -85,7 +80,7 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(
 st.markdown(luxury_style, unsafe_allow_html=True)
 
 # ==========================================
-# 4. التنقل وقاعدة البيانات
+# 4. التنقل والمحتوى
 # ==========================================
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
@@ -99,60 +94,38 @@ db = {
     ]
 }
 
-# --- الصفحة الرئيسية ---
 if st.session_state.page == 'home':
     st.markdown('<div class="hero-title">Discover Trending Products Across <span>Every Platform</span></div>', unsafe_allow_html=True)
-    
-    platforms = [
-        {"icon": "fa-brands fa-amazon", "name": "Amazon", "stats": "2.4M+ Items"},
-        {"icon": "fa-brands fa-tiktok", "name": "TikTok Shop", "stats": "980K+ Items"},
-        {"icon": "fa-solid fa-cart-shopping", "name": "AliExpress", "stats": "1.8M+ Items"}
-    ]
-    
     cols = st.columns(3)
-    for i, p in enumerate(platforms):
+    platforms = [("fa-brands fa-amazon", "Amazon"), ("fa-brands fa-tiktok", "TikTok Shop"), ("fa-solid fa-cart-shopping", "AliExpress")]
+    for i, (icon, name) in enumerate(platforms):
         with cols[i]:
-            st.markdown(f"""
-            <div class="platform-card">
-                <div class="platform-icon"><i class="{p['icon']}"></i></div>
-                <div class="platform-name">{p['name']}</div>
-                <div class="platform-stats"><i class="fa-solid fa-bolt"></i> {p['stats']}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button(f"Explore {p['name']}", key=f"p_{i}"):
-                st.session_state.platform = p['name']
+            st.markdown(f'<div class="platform-card"><div class="platform-icon"><i class="{icon}"></i></div><div style="font-size:1.5rem; font-weight:700;">{name}</div></div>', unsafe_allow_html=True)
+            if st.button(f"Explore {name}", key=f"p_{i}"):
+                st.session_state.platform = name
                 st.session_state.page = 'details'
                 st.rerun()
 
-# --- صفحة الرادار ---
 elif st.session_state.page == 'details':
-    if st.button("← Back to Platforms"):
+    if st.button("← Back"):
         st.session_state.page = 'home'
         st.rerun()
-    
-    st.markdown(f"<h2>{st.session_state.platform} <span style='color:#d4af37;'>Trending Radar</span></h2>", unsafe_allow_html=True)
     
     items = db.get(st.session_state.platform, db["Amazon"])
     cols = st.columns(3)
     
     for i, item in enumerate(items):
-        with cols[i % 3]:
+        with cols[i]:
             st.image(item['img'], use_container_width=True)
             st.markdown(f"### {item['name']}")
-            st.markdown(f"<span style='color:#d4af37; font-weight:bold;'>{item['price']}</span> | Trend: {item['score']}", unsafe_allow_html=True)
-            
-            # محرك توليد البراند
             if st.button(f"✨ Build {item['name']} Brand", key=f"btn_{i}"):
-                with st.spinner("Creating your luxury strategy..."):
+                with st.spinner("Creating Brand..."):
                     try:
-                        # طلب بسيط من الذكاء الاصطناعي
-                        prompt = f"Act as a luxury brand expert. For the product '{item['name']}', suggest a premium brand name and a short tagline. Be brief."
-                        response = model.generate_content(prompt)
+                        # طلب بسيط من الموديل المستقر
+                        response = model.generate_content(f"Suggest a luxury brand name and a one-sentence tagline for: {item['name']}")
                         st.session_state[f"res_{i}"] = response.text
-                        st.toast("Success! Brand strategy generated.", icon="✅")
                     except Exception as e:
-                        st.error(f"❌ خطأ من Google: {str(e)}")
-                        st.info("نصيحة: تأكد أن مفتاح API الذي نسخته هو مفتاح 'Gemini' وليس خدمة أخرى.")
+                        st.error(f"⚠️ تفاصيل الخطأ: {e}")
             
             if f"res_{i}" in st.session_state:
                 st.markdown("---")
