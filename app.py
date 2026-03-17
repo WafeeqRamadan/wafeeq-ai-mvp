@@ -157,3 +157,37 @@ elif st.session_state.page == 'details':
             if f"res_{i}" in st.session_state:
                 st.markdown("---")
                 st.info(st.session_state[f"res_{i}"])
+
+import streamlit as st
+import google.generativeai as genai
+
+st.set_page_config(page_title="WAFEEQ AI | Debug Mode", layout="wide")
+
+# فحص وجود المفتاح
+if "GOOGLE_API_KEY" not in st.secrets:
+    st.error("❌ الخزنة فارغة! لم تضع المفتاح في Secrets.")
+    st.stop()
+
+# محاولة الربط
+try:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    model = genai.GenerativeModel('gemini-1.5-flash') # استخدمنا Flash لأنه أسرع في الفحص
+    st.success("✅ تم العثور على المفتاح في الخزنة.")
+except Exception as e:
+    st.error(f"❌ فشل في إعدادات Google AI: {e}")
+
+st.markdown("---")
+
+if st.button("🚀 اختبار الاتصال بـ Google AI الآن"):
+    try:
+        # اختبار بسيط جداً
+        response = model.generate_content("Say hello")
+        st.balloons()
+        st.write("### 🎉 مبروك! الاتصال يعمل بنجاح.")
+        st.write(f"رد الذكاء الاصطناعي: {response.text}")
+    except Exception as e:
+        # هنا سيظهر لك السبب الحقيقي للخطأ
+        st.error("⚠️ فشل الاتصال! السبب من شركة Google هو:")
+        st.code(str(e)) # هذا السطر سيخبرنا بالسبب (مفتاح خاطئ، منطقة محظورة، إلخ)
+
+st.info("بمجرد أن ينجح هذا الاختبار، سنعيد كود 'الإمبراطورية الفخمة' فوراً.")
