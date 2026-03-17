@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. API Key Configuration
-GOOGLE_API_KEY = "AIzaSyBgmZc3uH5jrTDvqhw5rwCaGspvW5KZUfI"
+GOOGLE_API_KEY = st.secrets["AIzaSyBgmZc3uH5jrTDvqhw5rwCaGspvW5KZUfI"]
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash')
 
