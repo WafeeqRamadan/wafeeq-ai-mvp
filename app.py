@@ -2,192 +2,240 @@ import streamlit as st
 import google.generativeai as genai
 import time
 
-# --- 1. إعدادات الصفحة الفخمة ---
+# --- 1. إعدادات الصفحة الأساسية ---
 st.set_page_config(
-    page_title="WAFEEQ AI - Founder's Radar",
-    page_icon="🚀",
-    layout="wide", # جعل الواجهة عريضة لتستوعب البطاقات
+    page_title="WAFEEQ AI | E-Commerce Intelligence",
+    page_icon="✨",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. الخزنة السرية للمفتاح (تأكد من وضع مفتاحك الحقيقي في إعدادات Streamlit) ---
-if "GOOGLE_API_KEY" not in st.secrets:
-    st.error("Missing Google API Key. Please add it to Streamlit Secrets.")
-    st.stop()
-else:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-
-# --- 3. محرك الـ AI (إصدار Gemini 1.5 PRO) ---
-model = genai.GenerativeModel('gemini-1.5-pro')
-
-# --- 4. CSS المتقدم لتحويل الواجهة إلى "فخمة" (التحول الجذري) ---
-hide_st_style = """
+# --- 2. CSS المتقدم: الفخامة والذهبي (Luxury UI) ---
+luxury_css = """
 <style>
-/* استيراد خط Poppins العصري */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+/* استيراد الخطوط: Playfair للعناوين، و Lato للنصوص */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
 
-/* تطبيق الخط والخلفية السوداء العميقة على التطبيق بالكامل */
+/* الخلفية واللون الأساسي */
 html, body, [data-testid="stAppViewContainer"] {
-    font-family: 'Poppins', sans-serif;
-    background-color: #050509; /* أسود أعمق وفخم */
+    background-color: #080808; /* أسود عميق جداً */
+    color: #e0e0e0;
+    font-family: 'Lato', sans-serif;
+}
+
+/* إخفاء عناصر Streamlit المزعجة */
+#MainMenu, footer, header, [data-testid="stDecoration"], [class^="viewerBadge_"] {
+    display: none !important;
+}
+
+/* --- تنسيقات العناوين (Playfair Display) --- */
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    font-weight: 400;
+    text-align: center;
     color: #ffffff;
+    line-height: 1.2;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
-/* إخفاء عناصر Streamlit الافتراضية تماماً */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-[data-testid="stHeader"] {background: rgba(0,0,0,0);} /* إخفاء الهيدر الشفاف */
-[class^="viewerBadge_"] {display: none !important;} /* إخفاء العلامة المائية */
-
-/* تنسيق العنوان الرئيسي بتأثير التوهج (Neon Glow) */
-.main-title {
-    font-size: 3rem;
-    font-weight: 700;
-    text-align: center;
-    background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 15px rgba(79, 172, 254, 0.5);
+.hero-title span {
+    color: #d4af37; /* لون ذهبي فاخر */
+    font-style: italic;
 }
 
-.sub-title {
-    font-size: 1.2rem;
+.hero-subtitle {
     text-align: center;
-    color: #a0a0a0;
-    margin-bottom: 3rem;
+    font-size: 1.1rem;
+    color: #888888;
+    max-width: 600px;
+    margin: 0 auto 3rem auto;
+    line-height: 1.6;
     font-weight: 300;
 }
 
-/* تصميم بطاقات المنتجات (Product Cards) مستوحاة من أمثلتك */
-.product-card {
-    background-color: #11112d; /* رمادي مزرق غامق للبطاقة */
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid #1f1f3e;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-/* تأثير التوهج عند تمرير الماوس على البطاقة */
-.product-card:hover {
-    transform: translateY(-5px);
-    border-color: #4facfe;
-    box-shadow: 0 10px 20px rgba(79, 172, 254, 0.2);
-}
-
-.product-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 15px;
-}
-
-.product-name {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 5px;
-}
-
-.product-category {
-    font-size: 0.9rem;
-    color: #00f2fe; /* لون سماوي فخم للتصنيف */
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-}
-
-.product-price {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #4facfe;
-    margin-bottom: 15px;
-}
-
-/* تنسيق الأزرار الافتراضية لتصبح " Glowing Neon" */
+/* --- تنسيقات الأزرار الذهبية --- */
 div.stButton > button {
-    background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
-    color: #050509 !important;
-    font-weight: 600;
+    background-color: #d4af37;
+    color: #000000 !important;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
     border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
+    border-radius: 4px;
+    padding: 12px 24px;
     transition: all 0.3s ease;
     width: 100%;
 }
 
 div.stButton > button:hover {
-    box-shadow: 0 0 15px rgba(79, 172, 254, 0.8);
-    transform: scale(1.03);
+    background-color: #bfa136;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    border: none;
 }
 
-div.stButton > button:active {
-    transform: scale(0.98);
+/* الزر الثانوي (الأسود ذو الحواف الذهبية) */
+div.stButton.secondary-btn > button {
+    background-color: transparent;
+    color: #d4af37 !important;
+    border: 1px solid #d4af37;
+}
+
+div.stButton.secondary-btn > button:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+}
+
+/* --- بطاقات المنصات (Platforms Grid) --- */
+.platform-card {
+    background-color: #121212;
+    border: 1px solid #222222;
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: left;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+}
+
+.platform-card:hover {
+    border-color: #d4af37;
+    background-color: #161616;
+}
+
+.platform-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #1a1a1a;
+    color: #d4af37;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.platform-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.platform-desc {
+    font-size: 0.9rem;
+    color: #777777;
+    margin-bottom: 20px;
+    min-height: 40px;
+}
+
+.platform-stats {
+    font-size: 0.8rem;
+    color: #d4af37;
+    font-weight: 700;
+}
+
+/* --- شعار الموقع أعلى اليسار --- */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #222222;
+    margin-bottom: 2rem;
+}
+
+.logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 2px;
+}
+.logo-text span {
+    color: #d4af37;
 }
 </style>
 """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+st.markdown(luxury_css, unsafe_allow_html=True)
 
-# --- 5. محتوى الصفحة الرئيسية ---
-st.markdown('<div class="main-title">WAFEEQ AI</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Founder\'s High-Potential Product Radar</div>', unsafe_allow_html=True)
+# --- 3. إدارة حالة التطبيق (للتنقل بين الصفحات) ---
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'home'
 
-# بيانات المنتجات (الرادار) - نفس البيانات ولكن سنعرضها كبطاقات
-products = [
-    {
-        "name": "Blink Mini Pan-Tilt Camera",
-        "category": "Home Security",
-        "price": "$29.99",
-        "image": "https://m.media-amazon.com/images/I/51gI-5r+hHL._AC_UL400_.jpg"
-    },
-    {
-        "name": "Portable Blender for Shakes",
-        "category": "Kitchen Appliances",
-        "price": "$35.99",
-        "image": "https://m.media-amazon.com/images/I/7 + bW5X8HwL._AC_UL400_.jpg"
-    },
-    {
-        "name": "Self-Cleaning Cat Litter Box",
-        "category": "Pet Supplies",
-        "price": "$499.00",
-        "image": "https://m.media-amazon.com/images/I/71x4x7V + cPL._AC_UL400_.jpg"
-    },
-     {
-        "name": "Professional Espresso Machine",
-        "category": "Appliances",
-        "price": "$599.99",
-        "image": "https://m.media-amazon.com/images/I/71X1p5N + bPL._AC_UL400_.jpg"
-    }
-]
+# --- 4. الشريط العلوي (Navigation) ---
+st.markdown("""
+<div class="top-nav">
+    <div class="logo-text">WAFEEQ <span>AI</span></div>
+</div>
+""", unsafe_allow_html=True)
 
-# --- 6. عرض المنتجات في "بطاقات" (Cards) فخمة بدلاً من الجدول ---
-st.markdown("### 📡 Live Radar: High-Potential Products")
+# ==========================================
+# الصفحة الرئيسية (Landing Page & Platforms)
+# ==========================================
+if st.session_state.current_page == 'home':
+    
+    # قسم الـ Hero (العنوان الضخم)
+    st.markdown("""
+    <div class="hero-title">Discover Trending Products<br>Across <span>Every Platform</span></div>
+    <div class="hero-subtitle">Real-time trend analysis and luxury brand content generation for the world's top e-commerce marketplaces. From product discovery to branded launch — in one click.</div>
+    """, unsafe_allow_html=True)
+    
+    # مساحة فارغة للترتيب
+    st.write("")
+    st.write("")
+    
+    # عنوان قسم المنصات
+    st.markdown("<h3 style='text-align: center; font-family: \"Playfair Display\", serif; font-weight: 400; color: #fff; margin-bottom: 2rem;'>Choose Your <span style='color:#d4af37; font-style:italic;'>Platform</span></h3>", unsafe_allow_html=True)
+    
+    # بيانات المنصات
+    platforms = [
+        {"icon": "A", "name": "Amazon", "desc": "World's largest e-commerce marketplace", "stats": "2.4M+ products"},
+        {"icon": "AE", "name": "AliExpress", "desc": "Direct suppliers from global manufacturers", "stats": "1.8M+ products"},
+        {"icon": "TT", "name": "TikTok Shop", "desc": "Viral product discovery for Gen Z & beyond", "stats": "980K+ products"},
+        {"icon": "W", "name": "Walmart", "desc": "Dominant US retail marketplace", "stats": "1.2M+ products"},
+        {"icon": "Et", "name": "Etsy", "desc": "Handmade, vintage & unique products", "stats": "650K+ products"},
+        {"icon": "eB", "name": "eBay", "desc": "Auctions, collectibles & direct sales", "stats": "1.5M+ products"}
+    ]
+    
+    # بناء شبكة المنصات (3 أعمدة × صفين)
+    col1, col2, col3 = st.columns(3)
+    cols = [col1, col2, col3, col1, col2, col3]
+    
+    for i, p in enumerate(platforms):
+        with cols[i]:
+            # نرسم البطاقة كـ HTML
+            card_html = f"""
+            <div class="platform-card">
+                <div style="text-align: right; font-size: 0.7rem; color: #d4af37; margin-bottom: 10px;">● LIVE DATA</div>
+                <div class="platform-icon">{p['icon']}</div>
+                <div class="platform-name">{p['name']}</div>
+                <div class="platform-desc">{p['desc']}</div>
+                <div class="platform-stats">{p['stats']}</div>
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+            # زر غير مرئي تقريباً فوق البطاقة لجعلها قابلة للضغط
+            if st.button(f"Explore {p['name']}", key=f"btn_{p['name']}", use_container_width=True):
+                st.session_state.selected_platform = p['name']
+                st.session_state.current_page = 'products'
+                st.rerun()
 
-# تقسيم الصفحة إلى 4 أعمدة لعرض البطاقات بجوار بعضها
-cols = st.columns(4)
-
-for i, product in enumerate(products):
-    with cols[i % 4]:
-        # إنشاء هيكل البطاقة باستخدام HTML/CSS داخل st.markdown
-        card_html = f"""
-        <div class="product-card">
-            <img src="{product['image']}" class="product-image" alt="{product['name']}">
-            <div class="product-category">{product['category']}</div>
-            <div class="product-name">{product['name']}</div>
-            <div class="product-price">{product['price']}</div>
-        </div>
-        """
-        st.markdown(card_html, unsafe_allow_html=True)
+# ==========================================
+# صفحة عرض المنتجات (بعد اختيار المنصة)
+# ==========================================
+elif st.session_state.current_page == 'products':
+    
+    # زر العودة
+    if st.button("← Back to Platforms"):
+        st.session_state.current_page = 'home'
+        st.rerun()
         
-        # إضافة الزر التفاعلي أسفل كل بطاقة
-        button_key = f"init_{i}"
-        if st.button(f"🚀 Initialize {product['name']}", key=button_key):
-            st.warning(f"Feature under development. Contact COO for beta access.")
-
-# --- 7. قسم التحليل (سيظهر عند الضغط على الزر) ---
-st.write("---")
-# (باقي كود التحليل يمكن إضافته هنا لاحقاً)
+    st.markdown(f"<h2 style='font-family: \"Playfair Display\", serif; color: #fff;'>{st.session_state.selected_platform} — <span style='color:#d4af37;'>Trending Products</span></h2>", unsafe_allow_html=True)
+    st.write("TOP PRODUCTS · RANKED BY AI TREND ANALYSIS")
+    st.write("---")
+    
+    # رسالة مؤقتة لتوضيح أننا في قسم المنتجات
+    st.info(f"You are now exploring live trends on **{st.session_state.selected_platform}**. The product grid and AI brand generation features will be connected to the API in the next step.")
