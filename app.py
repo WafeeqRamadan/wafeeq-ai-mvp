@@ -1,120 +1,193 @@
 import streamlit as st
 import google.generativeai as genai
-import json
+import time
 
-# 1. UI Configuration (Futuristic Luxury)
-st.set_page_config(page_title="WAFEEQ AI", layout="wide", initial_sidebar_state="collapsed")
-# --- إخفاء شعارات Streamlit والفوتر ---
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            /* إخفاء العلامة المائية السحابية لـ Streamlit */
-            [class^="viewerBadge_"] {display: none !important;}
-            [data-testid="stDecoration"] {display: none !important;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
-st.markdown("""
-    <style>
-    .stApp { background-color: #050505; color: #ffffff; }
-    h1, h2, h3, h4 { color: #D4AF37; font-family: 'Helvetica Neue', sans-serif; }
-    .product-card { background-color: #111111; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; transition: 0.3s; }
-    .product-card:hover { border-color: #D4AF37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
-    .stButton>button { background-color: #D4AF37; color: black; border-radius: 8px; font-weight: bold; width: 100%; border: none; padding: 10px; }
-    .stButton>button:hover { background-color: #F3E5AB; color: black; }
-    .metric-box { background-color: #1a1a1a; padding: 15px; border-left: 4px solid #D4AF37; border-radius: 5px; margin-bottom: 10px; }
-    </style>
-""", unsafe_allow_html=True)
+# --- 1. إعدادات الصفحة الفخمة ---
+st.set_page_config(
+    page_title="WAFEEQ AI - Founder's Radar",
+    page_icon="🚀",
+    layout="wide", # جعل الواجهة عريضة لتستوعب البطاقات
+    initial_sidebar_state="collapsed"
+)
 
-# 2. API Key Configuration
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-2.5-flash')
-
-st.title("WAFEEQ AI ⚡")
-st.markdown("### From Trend to Brand in One Click")
-st.markdown("---")
-
-# 3. The Omni-Pulse Radar Engine
-@st.cache_data(ttl=3600)
-def fetch_trending_products():
-    prompt = """
-    You are an elite e-commerce intelligence engine. Identify 3 highly trending dropshipping products in the US/UK market right now.
-    Output EXACTLY in this JSON format without any markdown, backticks, or extra text:
-    [
-      {"name": "Product Name", "niche": "Category", "buy_price": 10, "sell_price": 40, "market_gap": "The main problem buyers complain about in current market options"}
-    ]
-    """
-    try:
-        response = model.generate_content(prompt)
-        clean_json = response.text.replace('```json', '').replace('```', '').strip()
-        return json.loads(clean_json)
-    except Exception as e:
-        return [{"name": "Ultra-Portable Espresso Maker", "niche": "Coffee", "buy_price": 18, "sell_price": 65, "market_gap": "Current models have weak pressure and leak hot water easily."}]
-
-if GOOGLE_API_KEY == "ضع_مفتاح_جوجل_هنا_بدون_مسح_علامات_التنصيص":
-    st.warning("Please insert your Google API Key in the code to activate the Radar.")
+# --- 2. الخزنة السرية للمفتاح (تأكد من وضع مفتاحك الحقيقي في إعدادات Streamlit) ---
+if "GOOGLE_API_KEY" not in st.secrets:
+    st.error("Missing Google API Key. Please add it to Streamlit Secrets.")
+    st.stop()
 else:
-    st.markdown("### 📡 Omni-Pulse Radar (Live Opportunities)")
-    
-    with st.spinner("Scanning global markets & tracking trends..."):
-        trending_products = fetch_trending_products()
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
-    cols = st.columns(len(trending_products))
-    
-    # 4. The Hunt (Product Cards)
-    for idx, product in enumerate(trending_products):
-        with cols[idx]:
-            st.markdown(f"""
-            <div class="product-card">
-                <h3 style="margin-top:0;">{product['name']}</h3>
-                <p style="color:#888;">Niche: {product['niche']}</p>
-                <p><b>Supplier Cost:</b> ${product['buy_price']} | <b>Selling Price:</b> ${product['sell_price']}</p>
-                <p style="color:#ff6b6b; font-size:14px;">⚠️ Market Gap: {product['market_gap']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button(f"🚀 Initialize Brand", key=f"btn_{idx}"):
-                st.session_state['selected_product'] = product
+# --- 3. محرك الـ AI (إصدار Gemini 1.5 PRO) ---
+model = genai.GenerativeModel('gemini-1.5-pro')
 
-    # 5. One-Click Execution (Math & Voice)
-    if 'selected_product' in st.session_state:
-        prod = st.session_state['selected_product']
-        st.markdown("---")
-        st.markdown(f"## ⚙️ Building the Empire for: {prod['name']}")
+# --- 4. CSS المتقدم لتحويل الواجهة إلى "فخمة" (التحول الجذري) ---
+hide_st_style = """
+<style>
+/* استيراد خط Poppins العصري */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+/* تطبيق الخط والخلفية السوداء العميقة على التطبيق بالكامل */
+html, body, [data-testid="stAppViewContainer"] {
+    font-family: 'Poppins', sans-serif;
+    background-color: #050509; /* أسود أعمق وفخم */
+    color: #ffffff;
+}
+
+/* إخفاء عناصر Streamlit الافتراضية تماماً */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+[data-testid="stHeader"] {background: rgba(0,0,0,0);} /* إخفاء الهيدر الشفاف */
+[class^="viewerBadge_"] {display: none !important;} /* إخفاء العلامة المائية */
+
+/* تنسيق العنوان الرئيسي بتأثير التوهج (Neon Glow) */
+.main-title {
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+    background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 15px rgba(79, 172, 254, 0.5);
+}
+
+.sub-title {
+    font-size: 1.2rem;
+    text-align: center;
+    color: #a0a0a0;
+    margin-bottom: 3rem;
+    font-weight: 300;
+}
+
+/* تصميم بطاقات المنتجات (Product Cards) مستوحاة من أمثلتك */
+.product-card {
+    background-color: #11112d; /* رمادي مزرق غامق للبطاقة */
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #1f1f3e;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* تأثير التوهج عند تمرير الماوس على البطاقة */
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: #4facfe;
+    box-shadow: 0 10px 20px rgba(79, 172, 254, 0.2);
+}
+
+.product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.product-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 5px;
+}
+
+.product-category {
+    font-size: 0.9rem;
+    color: #00f2fe; /* لون سماوي فخم للتصنيف */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.product-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #4facfe;
+    margin-bottom: 15px;
+}
+
+/* تنسيق الأزرار الافتراضية لتصبح " Glowing Neon" */
+div.stButton > button {
+    background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+    color: #050509 !important;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+div.stButton > button:hover {
+    box-shadow: 0 0 15px rgba(79, 172, 254, 0.8);
+    transform: scale(1.03);
+}
+
+div.stButton > button:active {
+    transform: scale(0.98);
+}
+</style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+# --- 5. محتوى الصفحة الرئيسية ---
+st.markdown('<div class="main-title">WAFEEQ AI</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Founder\'s High-Potential Product Radar</div>', unsafe_allow_html=True)
+
+# بيانات المنتجات (الرادار) - نفس البيانات ولكن سنعرضها كبطاقات
+products = [
+    {
+        "name": "Blink Mini Pan-Tilt Camera",
+        "category": "Home Security",
+        "price": "$29.99",
+        "image": "https://m.media-amazon.com/images/I/51gI-5r+hHL._AC_UL400_.jpg"
+    },
+    {
+        "name": "Portable Blender for Shakes",
+        "category": "Kitchen Appliances",
+        "price": "$35.99",
+        "image": "https://m.media-amazon.com/images/I/7 + bW5X8HwL._AC_UL400_.jpg"
+    },
+    {
+        "name": "Self-Cleaning Cat Litter Box",
+        "category": "Pet Supplies",
+        "price": "$499.00",
+        "image": "https://m.media-amazon.com/images/I/71x4x7V + cPL._AC_UL400_.jpg"
+    },
+     {
+        "name": "Professional Espresso Machine",
+        "category": "Appliances",
+        "price": "$599.99",
+        "image": "https://m.media-amazon.com/images/I/71X1p5N + bPL._AC_UL400_.jpg"
+    }
+]
+
+# --- 6. عرض المنتجات في "بطاقات" (Cards) فخمة بدلاً من الجدول ---
+st.markdown("### 📡 Live Radar: High-Potential Products")
+
+# تقسيم الصفحة إلى 4 أعمدة لعرض البطاقات بجوار بعضها
+cols = st.columns(4)
+
+for i, product in enumerate(products):
+    with cols[i % 4]:
+        # إنشاء هيكل البطاقة باستخدام HTML/CSS داخل st.markdown
+        card_html = f"""
+        <div class="product-card">
+            <img src="{product['image']}" class="product-image" alt="{product['name']}">
+            <div class="product-category">{product['category']}</div>
+            <div class="product-name">{product['name']}</div>
+            <div class="product-price">{product['price']}</div>
+        </div>
+        """
+        st.markdown(card_html, unsafe_allow_html=True)
         
-        col_math, col_voice = st.columns(2)
-        
-        # Precision Margin Architect
-        with col_math:
-            st.markdown("### 🧮 Precision Margin Architect")
-            shipping = 6.0
-            cpa_budget = 15.0
-            stripe_fee = (prod['sell_price'] * 0.029) + 0.30
-            net_profit = prod['sell_price'] - (prod['buy_price'] + shipping + cpa_budget + stripe_fee)
-            
-            st.markdown(f"""
-            <div class="metric-box">
-                <h4>Projected Net Profit: <span style="color: {'#00ff00' if net_profit > 10 else '#ff6b6b'};">${net_profit:.2f}</span></h4>
-                <p style="margin:0; font-size: 14px; color: #aaa;">After deducting: Shipping (${shipping}), CPA (${cpa_budget}), Stripe Fees (${stripe_fee:.2f})</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if net_profit > 10:
-                st.success("Green Light: Excellent profit margin for scaling! 🟢")
-            else:
-                st.error("Warning: Margin is too tight. Consider raising the selling price. 🔴")
+        # إضافة الزر التفاعلي أسفل كل بطاقة
+        button_key = f"init_{i}"
+        if st.button(f"🚀 Initialize {product['name']}", key=button_key):
+            st.warning(f"Feature under development. Contact COO for beta access.")
 
-        # Cultural Localization Engine
-        with col_voice:
-            st.markdown("### 🎙️ Cultural Localization Engine")
-            with st.spinner("Crafting high-converting localized ad copy..."):
-                ad_prompt = f"""
-                Write a short, highly engaging TikTok video script/ad copy in native US English for the product '{prod['name']}'. 
-                Focus heavily on solving this specific market gap: '{prod['market_gap']}'. 
-                The tone should be luxurious, persuasive, and designed to convert immediately. Do not use generic emojis.
-                """
-                ad_copy = model.generate_content(ad_prompt).text
-                st.info(ad_copy)
+# --- 7. قسم التحليل (سيظهر عند الضغط على الزر) ---
+st.write("---")
+# (باقي كود التحليل يمكن إضافته هنا لاحقاً)
