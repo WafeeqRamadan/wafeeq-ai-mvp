@@ -2,7 +2,9 @@ import streamlit as st
 import google.generativeai as genai
 import time
 
-# --- 1. إعدادات الصفحة الأساسية ---
+# ==========================================
+# 1. الإعدادات الأساسية
+# ==========================================
 st.set_page_config(
     page_title="WAFEEQ AI | E-Commerce Intelligence",
     page_icon="✨",
@@ -10,25 +12,34 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. CSS المتقدم: الفخامة والذهبي (Luxury UI) ---
+# ==========================================
+# 2. الخزنة السرية للمفتاح 
+# ==========================================
+if "GOOGLE_API_KEY" not in st.secrets:
+    st.error("Missing Google API Key. Please add it to Streamlit Secrets.")
+    st.stop()
+else:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+
+model = genai.GenerativeModel('gemini-1.5-pro')
+
+# ==========================================
+# 3. CSS المتقدم: الفخامة والذهبي (Luxury UI)
+# ==========================================
 luxury_css = """
 <style>
-/* استيراد الخطوط: Playfair للعناوين، و Lato للنصوص */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
 
-/* الخلفية واللون الأساسي */
 html, body, [data-testid="stAppViewContainer"] {
-    background-color: #080808; /* أسود عميق جداً */
+    background-color: #080808; 
     color: #e0e0e0;
     font-family: 'Lato', sans-serif;
 }
 
-/* إخفاء عناصر Streamlit المزعجة */
 #MainMenu, footer, header, [data-testid="stDecoration"], [class^="viewerBadge_"] {
     display: none !important;
 }
 
-/* --- تنسيقات العناوين (Playfair Display) --- */
 .hero-title {
     font-family: 'Playfair Display', serif;
     font-size: 4.5rem;
@@ -41,7 +52,7 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .hero-title span {
-    color: #d4af37; /* لون ذهبي فاخر */
+    color: #d4af37;
     font-style: italic;
 }
 
@@ -55,7 +66,6 @@ html, body, [data-testid="stAppViewContainer"] {
     font-weight: 300;
 }
 
-/* --- تنسيقات الأزرار الذهبية --- */
 div.stButton > button {
     background-color: #d4af37;
     color: #000000 !important;
@@ -75,18 +85,6 @@ div.stButton > button:hover {
     border: none;
 }
 
-/* الزر الثانوي (الأسود ذو الحواف الذهبية) */
-div.stButton.secondary-btn > button {
-    background-color: transparent;
-    color: #d4af37 !important;
-    border: 1px solid #d4af37;
-}
-
-div.stButton.secondary-btn > button:hover {
-    background-color: rgba(212, 175, 55, 0.1);
-}
-
-/* --- بطاقات المنصات (Platforms Grid) --- */
 .platform-card {
     background-color: #121212;
     border: 1px solid #222222;
@@ -137,7 +135,6 @@ div.stButton.secondary-btn > button:hover {
     font-weight: 700;
 }
 
-/* --- شعار الموقع أعلى اليسار --- */
 .top-nav {
     display: flex;
     justify-content: space-between;
@@ -157,15 +154,26 @@ div.stButton.secondary-btn > button:hover {
 .logo-text span {
     color: #d4af37;
 }
+
+/* تنسيق حقول الإدخال */
+.stTextInput input {
+    background-color: #121212;
+    color: #fff;
+    border: 1px solid #d4af37;
+    border-radius: 4px;
+}
 </style>
 """
 st.markdown(luxury_css, unsafe_allow_html=True)
 
-# --- 3. إدارة حالة التطبيق (للتنقل بين الصفحات) ---
+# ==========================================
+# 4. إدارة حالة التطبيق (Navigation)
+# ==========================================
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'home'
+if 'selected_platform' not in st.session_state:
+    st.session_state.selected_platform = 'Amazon'
 
-# --- 4. الشريط العلوي (Navigation) ---
 st.markdown("""
 <div class="top-nav">
     <div class="logo-text">WAFEEQ <span>AI</span></div>
@@ -173,24 +181,44 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# الصفحة الرئيسية (Landing Page & Platforms)
+# 5. قاعدة بيانات المنتجات الديناميكية
+# ==========================================
+# هذه البيانات تتغير حسب السوق المختار لإعطاء شعور بالاحترافية
+db_products = {
+    "Amazon": [
+        {"id": "a1", "name": "Chronograph Elite Watch", "category": "ACCESSORIES", "score": "↗ 97", "price": "$249.99", "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "a2", "name": "Minimalist Leather Tote", "category": "FASHION", "score": "↗ 94", "price": "$189.00", "image": "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "a3", "name": "Wireless ANC Earbuds", "category": "ELECTRONICS", "score": "↗ 91", "price": "$159.99", "image": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "a4", "name": "Smart Home Espresso Maker", "category": "APPLIANCES", "score": "↗ 89", "price": "$399.00", "image": "https://images.unsplash.com/photo-1517246286411-8bb31bf4148b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "a5", "name": "Ergonomic Office Chair", "category": "FURNITURE", "score": "↗ 88", "price": "$299.99", "image": "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "a6", "name": "Ceramic Matcha Set", "category": "HOME & KITCHEN", "score": "↗ 85", "price": "$45.00", "image": "https://images.unsplash.com/photo-1582793988951-9aed550cbe14?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"}
+    ],
+    "TikTok Shop": [
+        {"id": "t1", "name": "LED Vanity Mirror", "category": "BEAUTY", "score": "↗ 99", "price": "$35.00", "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "t2", "name": "Cloud Slippers", "category": "FASHION", "score": "↗ 98", "price": "$24.99", "image": "https://images.unsplash.com/photo-1491553895911-0055eca6402d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "t3", "name": "Heatless Hair Curler", "category": "BEAUTY", "score": "↗ 95", "price": "$15.99", "image": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "t4", "name": "Sunset Projection Lamp", "category": "DECOR", "score": "↗ 93", "price": "$19.99", "image": "https://images.unsplash.com/photo-1565814329452-e1efa11c5e8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"}
+    ],
+    "AliExpress": [
+        {"id": "al1", "name": "Mini Projector 4K", "category": "TECH", "score": "↗ 96", "price": "$65.00", "image": "https://images.unsplash.com/photo-1585862705626-880053916960?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "al2", "name": "Mechanical Keyboard", "category": "GAMING", "score": "↗ 92", "price": "$45.99", "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"},
+        {"id": "al3", "name": "Carpet Cleaning Brush", "category": "HOME", "score": "↗ 89", "price": "$12.50", "image": "https://images.unsplash.com/photo-1585421514284-ceb93e8784ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"}
+    ]
+}
+
+# ==========================================
+# الصفحة الرئيسية (Landing Page)
 # ==========================================
 if st.session_state.current_page == 'home':
     
-    # قسم الـ Hero (العنوان الضخم)
     st.markdown("""
     <div class="hero-title">Discover Trending Products<br>Across <span>Every Platform</span></div>
     <div class="hero-subtitle">Real-time trend analysis and luxury brand content generation for the world's top e-commerce marketplaces. From product discovery to branded launch — in one click.</div>
     """, unsafe_allow_html=True)
     
-    # مساحة فارغة للترتيب
     st.write("")
-    st.write("")
-    
-    # عنوان قسم المنصات
     st.markdown("<h3 style='text-align: center; font-family: \"Playfair Display\", serif; font-weight: 400; color: #fff; margin-bottom: 2rem;'>Choose Your <span style='color:#d4af37; font-style:italic;'>Platform</span></h3>", unsafe_allow_html=True)
     
-    # بيانات المنصات
     platforms = [
         {"icon": "A", "name": "Amazon", "desc": "World's largest e-commerce marketplace", "stats": "2.4M+ products"},
         {"icon": "AE", "name": "AliExpress", "desc": "Direct suppliers from global manufacturers", "stats": "1.8M+ products"},
@@ -200,13 +228,11 @@ if st.session_state.current_page == 'home':
         {"icon": "eB", "name": "eBay", "desc": "Auctions, collectibles & direct sales", "stats": "1.5M+ products"}
     ]
     
-    # بناء شبكة المنصات (3 أعمدة × صفين)
     col1, col2, col3 = st.columns(3)
     cols = [col1, col2, col3, col1, col2, col3]
     
     for i, p in enumerate(platforms):
         with cols[i]:
-            # نرسم البطاقة كـ HTML
             card_html = f"""
             <div class="platform-card">
                 <div style="text-align: right; font-size: 0.7rem; color: #d4af37; margin-bottom: 10px;">● LIVE DATA</div>
@@ -217,60 +243,42 @@ if st.session_state.current_page == 'home':
             </div>
             """
             st.markdown(card_html, unsafe_allow_html=True)
-            # زر غير مرئي تقريباً فوق البطاقة لجعلها قابلة للضغط
             if st.button(f"Explore {p['name']}", key=f"btn_{p['name']}", use_container_width=True):
                 st.session_state.selected_platform = p['name']
-               # ==========================================
-# صفحة عرض المنتجات ومولد الذكاء الاصطناعي
+                st.session_state.current_page = 'products'
+                st.rerun()
+
+# ==========================================
+# صفحة عرض المنتجات والذكاء الاصطناعي
 # ==========================================
 elif st.session_state.current_page == 'products':
     
-    # زر العودة
     if st.button("← Back to Platforms"):
         st.session_state.current_page = 'home'
         st.rerun()
         
     st.markdown(f"<h2 style='font-family: \"Playfair Display\", serif; color: #fff;'>{st.session_state.selected_platform} — <span style='color:#d4af37;'>Trending Products</span></h2>", unsafe_allow_html=True)
-    st.write("TOP 3 PRODUCTS · RANKED BY AI TREND ANALYSIS")
+    st.write("TOP PRODUCTS · RANKED BY AI TREND ANALYSIS")
+    
+    # ميزة "رادار النيتش" للبحث المخصص
+    with st.expander("🔍 Can't find what you want? Search a specific niche"):
+        niche_query = st.text_input("Enter a niche (e.g., Pet Toys, Smart Home, Fitness):")
+        if st.button("Scan Niche Trends"):
+            if niche_query:
+                st.info(f"AI Radar is actively scanning '{niche_query}' trends on {st.session_state.selected_platform}... (API Integration Pending in v2.0)")
+    
     st.write("---")
     
-    # بيانات المنتجات الافتراضية (كما في تصميمك المرجعي)
-    platform_products = [
-        {
-            "id": 1,
-            "name": "Chronograph Elite Watch",
-            "category": "ACCESSORIES",
-            "score": "↗ 97",
-            "price": "$249.99",
-            "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-        },
-        {
-            "id": 2,
-            "name": "Minimalist Leather Tote",
-            "category": "FASHION",
-            "score": "↗ 94",
-            "price": "$189.00",
-            "image": "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-        },
-        {
-            "id": 3,
-            "name": "Wireless ANC Earbuds Pro",
-            "category": "ELECTRONICS",
-            "score": "↗ 91",
-            "price": "$159.99",
-            "image": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-        }
-    ]
-
-    # رسم شبكة المنتجات في 3 أعمدة
-    col1, col2, col3 = st.columns(3)
-    cols = [col1, col2, col3]
-
-    for i, prod in enumerate(platform_products):
-        with cols[i]:
-            # تصميم بطاقة المنتج
+    # جلب المنتجات الخاصة بالمنصة المختارة (وإذا لم تكن في الداتا نعرض أمازون كافتراضي)
+    current_products = db_products.get(st.session_state.selected_platform, db_products["Amazon"])
+    
+    # عرض كل المنتجات في شبكة من 3 أعمدة
+    cols = st.columns(3)
+    
+    for i, prod in enumerate(current_products):
+        with cols[i % 3]:
             card = f"""
-            <div class="platform-card" style="padding: 15px;">
+            <div class="platform-card" style="padding: 15px; margin-bottom: 20px;">
                 <img src="{prod['image']}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; color:#888; font-size:0.8rem; margin-bottom:10px;">
                     <span>{prod['category']}</span>
@@ -282,48 +290,28 @@ elif st.session_state.current_page == 'products':
             """
             st.markdown(card, unsafe_allow_html=True)
             
-            # زر توليد البراند (الذكاء الاصطناعي)
+            # الزر الذهبي للذكاء الاصطناعي
             if st.button(f"✨ Generate Luxury Brand", key=f"gen_{prod['id']}"):
                 with st.spinner('AI is crafting your luxury brand strategy...'):
-                    # هنا يحدث السحر: نرسل الأمر لـ Gemini
                     prompt = f"""
                     You are a world-class luxury brand strategist. I have a trending e-commerce product: "{prod['name']}".
                     Create a luxury brand identity for this product to sell it at a premium price.
                     
-                    Format your response exactly like this:
-                    **Brand Name:** (Invent a short, elegant, Italian or French-sounding name)
-                    **Tagline:** (One short, luxurious sentence)
-                    **Target Audience:** (Who buys this premium product?)
-                    **Luxury Marketing Copy:** (A 3-sentence emotional, high-end description to use on the website)
+                    Format your response strictly as follows:
+                    **Brand Name:** [Invent a short, elegant, premium name]
+                    **Tagline:** [One short, luxurious sentence]
+                    **Target Audience:** [Who buys this premium product?]
+                    **Luxury Marketing Copy:** [A 3-sentence emotional, high-end description to use on the website]
                     """
-                    
                     try:
                         response = model.generate_content(prompt)
                         st.session_state[f"result_{prod['id']}"] = response.text
                     except Exception as e:
                         st.error("Error communicating with AI. Check your API key.")
             
-            # عرض نتيجة الذكاء الاصطناعي إن وجدت تحت المنتج
+            # إظهار النتيجة تحت المنتج
             if f"result_{prod['id']}" in st.session_state:
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.success("✨ Brand Generated Successfully!")
+                st.success("✨ Brand Generated!")
                 with st.expander("View Brand Strategy", expanded=True):
                     st.write(st.session_state[f"result_{prod['id']}"])
-                st.rerun()
-
-# ==========================================
-# صفحة عرض المنتجات (بعد اختيار المنصة)
-# ==========================================
-elif st.session_state.current_page == 'products':
-    
-    # زر العودة
-    if st.button("← Back to Platforms"):
-        st.session_state.current_page = 'home'
-        st.rerun()
-        
-    st.markdown(f"<h2 style='font-family: \"Playfair Display\", serif; color: #fff;'>{st.session_state.selected_platform} — <span style='color:#d4af37;'>Trending Products</span></h2>", unsafe_allow_html=True)
-    st.write("TOP PRODUCTS · RANKED BY AI TREND ANALYSIS")
-    st.write("---")
-    
-    # رسالة مؤقتة لتوضيح أننا في قسم المنتجات
-    st.info(f"You are now exploring live trends on **{st.session_state.selected_platform}**. The product grid and AI brand generation features will be connected to the API in the next step.")
