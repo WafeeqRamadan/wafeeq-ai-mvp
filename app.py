@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+import requests
 
 # ==========================================
 # 1. إعدادات الصفحة
@@ -12,32 +12,35 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. إعداد مفتاح API
+# 2. إعداد مفتاح API (الاتصال المباشر)
 # ==========================================
 if "GOOGLE_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    API_KEY = st.secrets["GOOGLE_API_KEY"]
 else:
-    st.error("⚠️ لم يتم العثور على المفتاح السري في إعدادات Streamlit.")
+    st.error("⚠️ لم يتم العثور على المفتاح السري في الخزنة.")
     st.stop()
 
 # ==========================================
-# 3. الدالة الذكية لاختراق مشكلة الـ 404
+# 3. دالة الاتصال المباشر (تجاوزنا مكتبة جوجل تماماً)
 # ==========================================
 def generate_brand_content(prompt):
-    # هذه الدالة ستجرب الموديلات واحداً تلو الآخر حتى تنجح ولا تظهر لك خطأ 404 أبداً
-    models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
-    last_error = ""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+    headers = {'Content-Type': 'application/json'}
+    payload = {
+        "contents": [{"parts":[{"text": prompt}]}]
+    }
     
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            last_error = str(e)
-            continue # إذا فشل موديل، جرب الذي بعده بصمت
-            
-    return f"Error: {last_error}" # لن يظهر هذا إلا لو فشلت كل الموديلات
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        # إذا نجح الاتصال
+        if response.status_code == 200:
+            data = response.json()
+            return data['candidates'][0]['content']['parts'][0]['text']
+        # إذا كان المفتاح به مشكلة حقيقية
+        else:
+            return f"API Error ({response.status_code}): يرجى التأكد من أن المفتاح السري مفعل وليس منتهي الصلاحية."
+    except Exception as e:
+        return f"Network Error: {str(e)}"
 
 # ==========================================
 # 4. التصميم الفخم (Luxury UI)
@@ -73,7 +76,7 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(
 st.markdown(luxury_style, unsafe_allow_html=True)
 
 # ==========================================
-# 5. محرك التطبيق والصفحات
+# 5. محرك التطبيق
 # ==========================================
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
@@ -118,13 +121,12 @@ elif st.session_state.page == 'details':
             
             if st.button(f"✨ Build {item['name']} Brand", key=f"btn_{i}"):
                 with st.spinner("AI is crafting your luxury strategy..."):
-                    # استدعاء الدالة الذكية التي تتجنب الأخطاء
+                    # استخدام الاتصال المباشر الخارق
                     prompt = f"Act as a luxury brand strategist. Suggest an elegant brand name and a short premium tagline for: {item['name']}."
                     result = generate_brand_content(prompt)
                     
-                    if "Error:" in result:
-                        st.error("⚠️ يبدو أن مفتاح API غير مصرح له أو منتهي الصلاحية.")
-                        st.code(result)
+                    if "Error" in result:
+                        st.error(result)
                     else:
                         st.session_state[f"res_{i}"] = result
                         st.balloons()
