@@ -4,26 +4,28 @@ import google.generativeai as genai
 # --- 1. إعدادات الصفحة ---
 st.set_page_config(page_title="WAFEEQ AI", page_icon="✨", layout="wide")
 
-# --- 2. الربط الذكي بالذكاء الاصطناعي ---
-# استخدمنا الموديل الأحدث والأكثر استقراراً لضمان عدم حدوث خطأ 404
+# --- 2. الربط الذكي والآمن ---
 if "GOOGLE_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        # هذا الموديل هو الأضمن للعمل الآن
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        
+        # محاولة الاتصال بالموديل المستقر الأضمن عالمياً
+        # جربنا flash و pro، الآن سنستخدم الاسم العام الذي يقبله جوجل في كل الحالات
+        model = genai.GenerativeModel('gemini-1.5-flash') 
+        
     except Exception as e:
         st.error(f"Initialization Error: {e}")
 else:
     st.error("Missing API Key in Secrets!")
     st.stop()
 
-# --- 3. CSS الفخامة (Luxury Black & Gold) ---
+# --- 3. CSS الفخامة ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Lato', sans-serif; }
 #MainMenu, footer, header, [data-testid="stDecoration"], [class^="viewerBadge_"] { display: none !important; }
-.hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; text-align: center; color: #fff; margin-top: 1rem; }
+.hero-title { font-family: 'Playfair Display', serif; font-size: 3rem; text-align: center; color: #fff; margin-top: 1rem; }
 .hero-title span { color: #d4af37; font-style: italic; }
 div.stButton > button { background-color: #d4af37; color: #000 !important; font-weight: 700; border-radius: 4px; width: 100%; border: none; }
 div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
@@ -45,14 +47,10 @@ db = {
 
 if st.session_state.page == 'home':
     st.markdown('<div class="hero-title">Discover Trending Products Across <span>Every Platform</span></div>', unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Explore Amazon"):
-            st.session_state.platform = "Amazon"
-            st.session_state.page = 'details'
-            st.rerun()
-    with col2:
-        st.markdown("<div style='text-align:center; color:#555;'>More Platforms Coming Soon...</div>", unsafe_allow_html=True)
+    if st.button("Explore Amazon"):
+        st.session_state.platform = "Amazon"
+        st.session_state.page = 'details'
+        st.rerun()
 
 elif st.session_state.page == 'details':
     if st.button("← Back"):
@@ -66,13 +64,21 @@ elif st.session_state.page == 'details':
             st.image(item['img'], use_container_width=True)
             st.markdown(f"### {item['name']}")
             if st.button(f"✨ Build {item['name']} Brand", key=f"btn_{i}"):
-                with st.spinner("AI Strategist is working..."):
+                with st.spinner("AI is thinking..."):
                     try:
-                        # تجربة أمر بسيط جداً للتأكد من الاتصال
-                        response = model.generate_content(f"Give me a luxury brand name for {item['name']}. One word only.")
+                        # طلب مباشر وبسيط جداً بدون تحديد إصدارات API معقدة
+                        response = model.generate_content("Give me one luxury brand name for this product: " + item['name'])
                         st.session_state[f"res_{i}"] = response.text
                     except Exception as e:
-                        st.error(f"Connection Issue: {e}")
+                        # إذا فشل، سنحاول استدعاء الموديل بطريقة بديلة فوراً
+                        st.error(f"Connection Issue. Trying backup method...")
+                        try:
+                            alt_model = genai.GenerativeModel('gemini-pro')
+                            response = alt_model.generate_content("One luxury brand name for: " + item['name'])
+                            st.session_state[f"res_{i}"] = response.text
+                            st.rerun()
+                        except:
+                            st.error("Please check your Google AI Dashboard. Your API Key might need to be re-generated.")
             
             if f"res_{i}" in st.session_state:
                 st.markdown(f"<div style='background:#111; padding:15px; border-left:4px solid #d4af37; color:#d4af37;'>{st.session_state[f"res_{i}"]}</div>", unsafe_allow_html=True)
