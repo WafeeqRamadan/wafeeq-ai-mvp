@@ -6,9 +6,6 @@ import requests
 # ==========================================
 st.set_page_config(page_title="WAFEEQ AI | Luxury Intelligence", page_icon="✨", layout="wide")
 
-# ==========================================
-# 2. إعداد المفتاح السري
-# ==========================================
 if "GOOGLE_API_KEY" in st.secrets:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
 else:
@@ -16,10 +13,10 @@ else:
     st.stop()
 
 # ==========================================
-# 3. العقل المدبر لاختيار الموديل الصحيح فقط
+# 2. العقل المدبر لتخطي حاجز الدفع (Auto-Fallback)
 # ==========================================
-@st.cache_data(ttl=3600) # حفظ اسم الموديل لمدة ساعة لتسريع الأداء
-def get_best_model():
+@st.cache_data(ttl=3600)
+def get_free_tier_models():
     url = f"https://generativelanguage.googleapis.com/v1beta/models?key={API_KEY}"
     try:
         res = requests.get(url)
@@ -27,45 +24,50 @@ def get_best_model():
             models = res.json().get('models', [])
             valid_models = []
             
-            # فلترة الموديلات: نريد موديلات النصوص فقط، ونستبعد موديلات الصور أو المحادثات المعقدة
             for m in models:
                 name = m.get('name', '')
                 methods = m.get('supportedGenerationMethods', [])
-                if 'generateContent' in methods and 'aqa' not in name and 'vision' not in name:
+                # نبحث عن موديلات النصوص العادية فقط
+                if 'generateContent' in methods and 'aqa' not in name and 'vision' not in name and 'embedding' not in name:
                     valid_models.append(name)
             
-            # إعطاء الأولوية لأفضل الموديلات
-            for v in valid_models:
-                if '1.5-flash' in v: return v
-            for v in valid_models:
-                if 'gemini-pro' in v or '1.0-pro' in v: return v
-                
-            if valid_models: return valid_models[0]
-        return None
+            # 🎯 السحر هنا: نرتب القائمة لنجعل الموديلات المجانية (Flash) في الصدارة لنتجنب خطأ 429
+            valid_models.sort(key=lambda x: (0 if 'flash' in x.lower() else 1, x))
+            return valid_models
+        return []
     except:
-        return None
-
-working_model = get_best_model()
+        return []
 
 def generate_brand_smart(prompt):
-    if not working_model:
-        return "❌ لم نعثر على موديل نصوص صالح لهذا المفتاح."
+    models = get_free_tier_models()
+    if not models:
+        return "❌ لم نعثر على أي موديل صالح للعمل."
         
-    gen_url = f"https://generativelanguage.googleapis.com/v1beta/{working_model}:generateContent?key={API_KEY}"
-    payload = {"contents": [{"parts":[{"text": prompt}]}]}
-    headers = {'Content-Type': 'application/json'}
-    
-    try:
-        res = requests.post(gen_url, headers=headers, json=payload)
-        if res.status_code == 200:
-            return res.json()['candidates'][0]['content']['parts'][0]['text']
-        else:
-            return f"❌ خطأ من جوجل: {res.text}"
-    except Exception as e:
-        return f"❌ عطل في الشبكة: {str(e)}"
+    last_error = ""
+    # سنجرب الموديلات واحداً تلو الآخر حتى ننجح
+    for model_name in models:
+        gen_url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={API_KEY}"
+        payload = {"contents": [{"parts":[{"text": prompt}]}]}
+        headers = {'Content-Type': 'application/json'}
+        
+        try:
+            res = requests.post(gen_url, headers=headers, json=payload)
+            if res.status_code == 200:
+                return res.json()['candidates'][0]['content']['parts'][0]['text']
+            elif res.status_code == 429:
+                last_error = f"الموديل {model_name} يتطلب خطة مدفوعة."
+                continue # ننتقل للموديل الذي يليه فوراً
+            else:
+                last_error = f"خطأ {res.status_code} في الموديل {model_name}"
+                continue
+        except Exception as e:
+            last_error = str(e)
+            continue
+            
+    return f"❌ استنفذنا كل المحاولات. آخر رسالة: {last_error}"
 
 # ==========================================
-# 4. التصميم الفاخر (وإخفاء العلامات المائية)
+# 3. التصميم الفاخر (وإخفاء زوائد Streamlit)
 # ==========================================
 luxury_style = """
 <style>
@@ -74,14 +76,10 @@ luxury_style = """
 
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Lato', sans-serif; }
 
-/* ❌ إخفاء الهيدر، الفوتر، والعلامات المائية الخاصة بـ Streamlit ❌ */
+/* إخفاء الهيدر والفوتر */
 #MainMenu, footer, header { visibility: hidden !important; display: none !important; }
-[data-testid="stDecoration"] { display: none !important; }
-[data-testid="stStatusWidget"] { display: none !important; }
-[class*="viewerBadge"] { display: none !important; }
-a[href^="https://streamlit.io/cloud"] { display: none !important; }
+[data-testid="stDecoration"], [data-testid="stStatusWidget"], [class*="viewerBadge"], a[href^="https://streamlit.io/cloud"] { display: none !important; }
 
-/* تنسيقات الفخامة */
 .hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; text-align: center; color: #ffffff; margin-top: 1rem; margin-bottom: 2rem;}
 .hero-title span { color: #d4af37; font-style: italic; }
 
@@ -100,7 +98,7 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(
 st.markdown(luxury_style, unsafe_allow_html=True)
 
 # ==========================================
-# 5. محرك التطبيق والواجهة
+# 4. محرك التطبيق والواجهة
 # ==========================================
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
@@ -144,7 +142,7 @@ elif st.session_state.page == 'details':
             st.markdown(f"<span style='color:#d4af37; font-weight:bold; font-size:1.2rem;'>{item['price']}</span> | Trend Score: {item['score']}", unsafe_allow_html=True)
             
             if st.button(f"✨ Build Brand Strategy", key=f"btn_{i}"):
-                with st.spinner("AI is crafting your luxury strategy..."):
+                with st.spinner("Bypassing limits and crafting strategy..."):
                     prompt = f"Act as a high-end luxury brand strategist. Suggest an elegant brand name and a short premium tagline for: {item['name']}."
                     result = generate_brand_smart(prompt)
                     
