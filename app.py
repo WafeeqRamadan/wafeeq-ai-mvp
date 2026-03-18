@@ -16,56 +16,72 @@ else:
     st.stop()
 
 # ==========================================
-# 3. العقل المدبر (الكود ذاتي العلاج لاكتشاف الموديلات)
+# 3. العقل المدبر لاختيار الموديل الصحيح فقط
 # ==========================================
+@st.cache_data(ttl=3600) # حفظ اسم الموديل لمدة ساعة لتسريع الأداء
+def get_best_model():
+    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={API_KEY}"
+    try:
+        res = requests.get(url)
+        if res.status_code == 200:
+            models = res.json().get('models', [])
+            valid_models = []
+            
+            # فلترة الموديلات: نريد موديلات النصوص فقط، ونستبعد موديلات الصور أو المحادثات المعقدة
+            for m in models:
+                name = m.get('name', '')
+                methods = m.get('supportedGenerationMethods', [])
+                if 'generateContent' in methods and 'aqa' not in name and 'vision' not in name:
+                    valid_models.append(name)
+            
+            # إعطاء الأولوية لأفضل الموديلات
+            for v in valid_models:
+                if '1.5-flash' in v: return v
+            for v in valid_models:
+                if 'gemini-pro' in v or '1.0-pro' in v: return v
+                
+            if valid_models: return valid_models[0]
+        return None
+    except:
+        return None
+
+working_model = get_best_model()
+
 def generate_brand_smart(prompt):
-    # الخطوة 1: سؤال جوجل عن الموديلات المسموحة لهذا المفتاح
-    list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={API_KEY}"
+    if not working_model:
+        return "❌ لم نعثر على موديل نصوص صالح لهذا المفتاح."
+        
+    gen_url = f"https://generativelanguage.googleapis.com/v1beta/{working_model}:generateContent?key={API_KEY}"
+    payload = {"contents": [{"parts":[{"text": prompt}]}]}
+    headers = {'Content-Type': 'application/json'}
     
     try:
-        res = requests.get(list_url)
-        if res.status_code != 200:
-            return f"❌ خطأ في المفتاح: {res.text}"
-            
-        models = res.json().get('models', [])
-        working_model = None
-        
-        # البحث عن أول موديل مسموح له بالكتابة (generateContent)
-        for m in models:
-            if 'generateContent' in m.get('supportedGenerationMethods', []):
-                working_model = m['name'] # سيلتقط الاسم الصحيح أياً كان (gemini-pro, gemini-1.5 الخ)
-                if 'gemini-1.5' in working_model: 
-                    break # إذا وجد الأحدث، يتوقف
-        
-        if not working_model:
-            return "❌ لم نعثر على أي موديل متاح لهذا المفتاح! يرجى عمل مفتاح جديد."
-
-        # الخطوة 2: إرسال الطلب للموديل الذي تم اكتشافه
-        gen_url = f"https://generativelanguage.googleapis.com/v1beta/{working_model}:generateContent?key={API_KEY}"
-        headers = {'Content-Type': 'application/json'}
-        payload = {"contents": [{"parts":[{"text": prompt}]}]}
-        
-        gen_res = requests.post(gen_url, headers=headers, json=payload)
-        
-        if gen_res.status_code == 200:
-            return gen_res.json()['candidates'][0]['content']['parts'][0]['text']
+        res = requests.post(gen_url, headers=headers, json=payload)
+        if res.status_code == 200:
+            return res.json()['candidates'][0]['content']['parts'][0]['text']
         else:
-            return f"❌ خطأ أثناء التوليد: {gen_res.text}"
-            
+            return f"❌ خطأ من جوجل: {res.text}"
     except Exception as e:
         return f"❌ عطل في الشبكة: {str(e)}"
 
 # ==========================================
-# 4. التصميم الفاخر (CSS)
+# 4. التصميم الفاخر (وإخفاء العلامات المائية)
 # ==========================================
-st.markdown("""
+luxury_style = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Lato', sans-serif; }
-#MainMenu, footer, header, [data-testid="stDecoration"], [class^="viewerBadge_"] { display: none !important; }
 
+/* ❌ إخفاء الهيدر، الفوتر، والعلامات المائية الخاصة بـ Streamlit ❌ */
+#MainMenu, footer, header { visibility: hidden !important; display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+[data-testid="stStatusWidget"] { display: none !important; }
+[class*="viewerBadge"] { display: none !important; }
+a[href^="https://streamlit.io/cloud"] { display: none !important; }
+
+/* تنسيقات الفخامة */
 .hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; text-align: center; color: #ffffff; margin-top: 1rem; margin-bottom: 2rem;}
 .hero-title span { color: #d4af37; font-style: italic; }
 
@@ -80,7 +96,8 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(
 .logo-text { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #fff; padding: 10px 0; border-bottom: 1px solid #222; margin-bottom: 2rem;}
 .logo-text span { color: #d4af37; }
 </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(luxury_style, unsafe_allow_html=True)
 
 # ==========================================
 # 5. محرك التطبيق والواجهة
@@ -127,7 +144,7 @@ elif st.session_state.page == 'details':
             st.markdown(f"<span style='color:#d4af37; font-weight:bold; font-size:1.2rem;'>{item['price']}</span> | Trend Score: {item['score']}", unsafe_allow_html=True)
             
             if st.button(f"✨ Build Brand Strategy", key=f"btn_{i}"):
-                with st.spinner("AI is bypassing servers and crafting strategy..."):
+                with st.spinner("AI is crafting your luxury strategy..."):
                     prompt = f"Act as a high-end luxury brand strategist. Suggest an elegant brand name and a short premium tagline for: {item['name']}."
                     result = generate_brand_smart(prompt)
                     
