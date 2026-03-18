@@ -5,7 +5,7 @@ import urllib.parse
 import re
 
 # ==========================================
-# 1. الإعدادات الأساسية (Foundation)
+# 1. الإعدادات الأساسية
 # ==========================================
 st.set_page_config(page_title="WAFEEQ AI | The Omni-System", page_icon="✦", layout="wide")
 
@@ -16,7 +16,7 @@ else:
     st.stop()
 
 # ==========================================
-# 2. محركات الذكاء الاصطناعي (AI Engines)
+# 2. محركات الذكاء الاصطناعي 
 # ==========================================
 @st.cache_data(ttl=3600)
 def get_best_models():
@@ -83,9 +83,8 @@ def calculate_true_profit(price_str):
     except: return "<div style='color:#dc3545;'>⚠️ Error calculating margins.</div>"
 
 # ==========================================
-# 3. التصميم الفاخر (UI Architecture)
+# 3. التصميم الفاخر 
 # ==========================================
-# قواميس للوجوهات الحقيقية (Real Market Logos)
 MARKET_LOGOS = {
     "Amazon": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
     "TikTok Shop": "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg",
@@ -117,7 +116,7 @@ html, body, [data-testid="stAppViewContainer"] { background-color: #0a0a0a; colo
 /* Platform Cards */
 .platform-grid-card { background-color: #111; border: 1px solid #222; border-radius: 12px; padding: 25px; transition: 0.3s; height: 100%; position: relative;}
 .platform-grid-card:hover { border-color: #d4af37; background-color: #151515; }
-.real-logo { height: 35px; object-fit: contain; margin-bottom: 25px; filter: brightness(0) invert(1); opacity: 0.9;} /* يجعل اللوجوهات بيضاء فخمة */
+.real-logo { height: 35px; object-fit: contain; margin-bottom: 25px; filter: brightness(0) invert(1); opacity: 0.9;}
 .live-data { position: absolute; top: 25px; right: 25px; font-size: 0.7rem; color: #d4af37; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;}
 .live-data::before { content: ''; width: 6px; height: 6px; background-color: #d4af37; border-radius: 50%; display: inline-block;}
 .p-title { font-size: 1.5rem; color: #fff; font-weight: 600; margin-bottom: 8px;}
@@ -140,7 +139,9 @@ html, body, [data-testid="stAppViewContainer"] { background-color: #0a0a0a; colo
 div.stButton > button { background-color: #c5a059; color: #000 !important; font-weight: 600; border: none; border-radius: 8px; padding: 12px; transition: 0.3s; width: 100%;}
 div.stButton > button:hover { background-color: #e8c37b; transform: translateY(-2px);}
 .search-input-container { max-width: 500px; margin: 0 auto; }
-.stSelectbox div[data-baseweb="select"] > div { background-color: #1a1a1a !important; color: #fff !important; border: 1px solid #333 !important; border-radius: 8px !important;}
+.stSelectbox div[data-baseweb="select"] > div { background-color: #1a1a1a !important; color: #fff !important; border: 1px solid #333 !important; border-radius: 8px !important; margin-bottom: 5px;}
+.studio-box { background: #0d0d0d; border: 1px solid #222; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+.studio-title { color: #d4af37; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -198,7 +199,7 @@ elif st.session_state.page == 'platforms':
             st.markdown(f"""
             <div class="platform-grid-card">
                 <div class="live-data">LIVE DATA</div>
-                <img src="{logo_url}" class="real-logo" alt="{p['name']} Logo">
+                <img src="{logo_url}" class="real-logo" alt="{p['name']} Logo" onerror="this.style.display='none'">
                 <div class="p-title">{p['name']}</div>
                 <div class="p-desc">{p['desc']}</div>
                 <div class="p-stats"><span>{p['stats']}</span> <span>→</span></div>
@@ -218,13 +219,13 @@ elif st.session_state.page == 'radar':
     logo_url = MARKET_LOGOS.get(st.session_state.platform, "")
     st.markdown(f"""
     <div class="radar-header">
-        <img src="{logo_url}" class="radar-header-logo">
+        <img src="{logo_url}" class="radar-header-logo" onerror="this.style.display='none'">
         <span style="font-family:'Playfair Display', serif; font-size:2rem; color:#fff;"> — <span style="color:#d4af37; font-style:italic;">Trending Products</span></span>
     </div>
     <div class="radar-sub">TOP PRODUCTS · RANKED BY AI TREND ANALYSIS IN '{st.session_state.niche.upper()}'</div>
     """, unsafe_allow_html=True)
     
-    with st.spinner("📡 Intercepting live market data & fetching realistic images..."):
+    with st.spinner("📡 Intercepting live market data..."):
         if 'live_data' not in st.session_state or st.session_state.get('last_niche') != f"{st.session_state.niche}_{st.session_state.platform}":
             st.session_state.live_data = fetch_live_trends(st.session_state.niche, st.session_state.platform)
             st.session_state.last_niche = f"{st.session_state.niche}_{st.session_state.platform}"
@@ -235,10 +236,9 @@ elif st.session_state.page == 'radar':
         cols = st.columns(3)
         for i, item in enumerate(st.session_state.live_data):
             with cols[i % 3]:
-                # 🌟 السحر هنا: أمر صارم لرسم صورة واقعية لمنتج تجارة إلكترونية بخلفية بيضاء (يحاكي الحقيقة 100%)
                 specs = item.get('specs', item.get('name'))
-                safe_prompt = urllib.parse.quote_plus(f"realistic e-commerce product photography of {specs}, isolated on pure white background, highly detailed, sharp focus, 4k")
-                img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=600&height=600&nologo=true&seed={i+50}"
+                safe_prompt = urllib.parse.quote_plus(f"realistic e-commerce product photography of {specs}, isolated on pure white background, highly detailed, 4k")
+                img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=600&height=600&nologo=true&seed={i+80}"
                 
                 st.markdown(f"""
                 <div class="product-card">
@@ -271,16 +271,46 @@ elif st.session_state.page == 'radar':
                 if st.session_state.get(f"show_profit_{i}"):
                     st.markdown(calculate_true_profit(item.get('price')), unsafe_allow_html=True)
 
-                st.markdown("<hr style='border-color:#222; margin:15px 0;'>", unsafe_allow_html=True)
+                # --- 🎬 إعدادات الاستوديو والتوطين ---
+                st.markdown("""<div class='studio-box'><div class='studio-title'>THE CRAFT STUDIO</div>""", unsafe_allow_html=True)
                 
-                st.markdown("<div style='color:#888; font-size:0.8rem; margin-bottom:5px;'>🌍 Target Market:</div>", unsafe_allow_html=True)
-                target_market = st.selectbox("", ["USA (English)", "Saudi Arabia (Arabic)", "UK (English)"], key=f"market_{i}", label_visibility="collapsed")
+                target_market = st.selectbox("Target Market (Voice):", ["USA (English)", "Saudi Arabia (Arabic)", "UK (English)"], key=f"market_{i}")
+                visual_style = st.selectbox("Visual Style (Craft):", ["Cinematic Luxury 🎬", "Authentic Lifestyle 📸"], key=f"style_{i}")
                 
-                if st.button("✦ Generate Brand", key=f"btn_b_{i}", use_container_width=True):
-                    with st.spinner("Crafting brand..."):
-                        res = call_gemini_direct(f"Act as a luxury brand strategist. Product: '{item.get('name')}'. Target Market: '{target_market}'. Provide: 1. Brand Name 2. Tagline 3. Short luxury description. MUST write in native language of '{target_market}'.")
-                        st.session_state[f"res_{i}"] = res
+                if st.button("✦ Render Campaign", key=f"btn_render_{i}"):
+                    with st.spinner("Crafting Localized Brand & Video Script..."):
+                        # 1. توليد المحتوى النصي المخصص
+                        prompt = f"""Act as a world-class luxury brand strategist. Product: '{item.get('name')}'. 
+                        Target Market: '{target_market}'. Visual Style: '{visual_style}'.
+                        
+                        Provide a structured campaign:
+                        1. **Brand Name:** Premium and catchy.
+                        2. **Tagline:** Short, impactful.
+                        3. **Ad Copy:** Written in the NATIVE language/slang of '{target_market}'.
+                        4. **TikTok Video Script (15s):** A short script matching the '{visual_style}' vibe. Include visual cues and voiceover text."""
+                        
+                        res = call_gemini_direct(prompt)
+                        st.session_state[f"render_txt_{i}"] = res
+                        
+                        # 2. توليد الصورة البطلة (Hero Image) بناءً على النمط المختار
+                        if "Cinematic" in visual_style:
+                            img_prompt = f"high end commercial photography of {specs}, cinematic studio lighting, dark luxury marble background, 8k resolution, photorealistic"
+                        else:
+                            img_prompt = f"authentic lifestyle photography of {specs}, user generated content style, realistic, held by a person in a cozy modern home environment, natural sunlight"
+                        
+                        safe_hero_prompt = urllib.parse.quote_plus(img_prompt)
+                        st.session_state[f"render_img_{i}"] = f"https://image.pollinations.ai/prompt/{safe_hero_prompt}?width=800&height=400&nologo=true&seed={i+100}"
+                        
                         st.balloons()
                 
-                if f"res_{i}" in st.session_state:
-                    st.markdown(f"<div style='background:#151515; padding:20px; border-radius:12px; border:1px solid #d4af37; margin-top:15px; color:#ddd; font-size:0.9rem; line-height:1.6;'>{st.session_state[f'res_{i}']}</div>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True) # نهاية مربع الاستوديو
+                
+                # --- عرض مخرجات الاستوديو الفاخرة ---
+                if f"render_txt_{i}" in st.session_state:
+                    st.markdown(f"""
+                    <div style='background:#111; padding:20px; border-radius:12px; border:1px solid #d4af37; margin-top:10px;'>
+                        <div style='color:#d4af37; font-size:0.8rem; letter-spacing:2px; margin-bottom:15px;'>✦ CAMPAIGN ASSETS GENERATED</div>
+                        <img src="{st.session_state[f'render_img_{i}']}" style="width:100%; border-radius:8px; margin-bottom:20px; border:1px solid #333;">
+                        <div style='color:#ddd; font-size:0.9rem; line-height:1.6;'>{st.session_state[f'render_txt_{i}'].replace(chr(10), '<br>')}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
