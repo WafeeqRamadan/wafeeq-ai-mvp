@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import urllib.parse
+import re
 
 # ==========================================
 # 1. الإعدادات الأساسية
@@ -47,7 +48,7 @@ def call_gemini(prompt):
     return "Error: Request failed."
 
 # ==========================================
-# 3. محرك جلب البيانات الحية
+# 3. محرك جلب البيانات الحية (بأوامر صارمة)
 # ==========================================
 def fetch_live_trends(niche, platform):
     prompt = f"""
@@ -55,9 +56,10 @@ def fetch_live_trends(niche, platform):
     Return ONLY a valid JSON array. Do not include markdown formatting or backticks. Just the raw JSON.
     Format exactly like this:
     [
-      {{"name": "Product 1 Name", "price": "$XX.XX", "score": "98", "keyword": "A single, highly descriptive English word for the product (e.g., 'Dress', 'Headphones')"}},
-      {{"name": "Product 2 Name", "price": "$YY.YY", "score": "95", "keyword": "A single, highly descriptive English word for the product"}}
+      {{"name": "Product 1 Name", "price": "$XX.XX", "score": "98", "keyword": "OneSingleWord"}},
+      {{"name": "Product 2 Name", "price": "$YY.YY", "score": "95", "keyword": "OneSingleWord"}}
     ]
+    IMPORTANT: The "keyword" must be strictly ONE single English word representing the object (e.g. Dress, Watch, Mug). No spaces, no symbols.
     """
     response = call_gemini(prompt)
     try:
@@ -72,7 +74,6 @@ def fetch_live_trends(niche, platform):
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Lato', sans-serif; }
 #MainMenu, footer, header { visibility: hidden !important; display: none !important; }
@@ -89,6 +90,9 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(
 
 .stTextInput input, .stSelectbox div[data-baseweb="select"] > div { background-color: #111 !important; color: #fff !important; border: 1px solid #333 !important; border-radius: 6px !important; padding: 10px !important;}
 .stTextInput input:focus, .stSelectbox div[data-baseweb="select"] > div:focus { border-color: #d4af37 !important; box-shadow: 0 0 5px rgba(212, 175, 55, 0.5) !important; }
+
+/* إخفاء أيقونة الصورة المكسورة تماماً إذا حدث خطأ في الشبكة */
+img { min-height: 200px; background-color: #111; color: transparent; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -128,33 +132,40 @@ elif st.session_state.page == 'results':
     st.markdown(f"<h2 style='margin-top:20px;'>Live Radar: <span style='color:#d4af37;'>'{st.session_state.niche}'</span> on {st.session_state.platform}</h2>", unsafe_allow_html=True)
     st.write("---")
     
-    with st.spinner("📡 AI is intercepting live market data... Please wait..."):
+    with st.spinner("📡 AI is intercepting live market data & generating visuals..."):
         if 'live_data' not in st.session_state or st.session_state.get('last_niche') != st.session_state.niche:
             data = fetch_live_trends(st.session_state.niche, st.session_state.platform)
             st.session_state.live_data = data
             st.session_state.last_niche = st.session_state.niche
 
     if not st.session_state.live_data:
-        st.error("⚠️ فشل في تحليل هذا السوق حالياً. الذكاء الاصطناعي يواجه ضغطاً، جرب كتابة مجال آخر أو أعد المحاولة.")
+        st.error("⚠️ فشل في تحليل هذا السوق حالياً. جرب كتابة مجال آخر.")
     else:
         cols = st.columns(2)
         for i, item in enumerate(st.session_state.live_data):
             with cols[i % 2]:
-                # 🌟 السحر هنا: نستخدم الذكاء الاصطناعي (Pollinations) لتوليد صورة فخمة للمنتج لحظياً!
-                safe_keyword = urllib.parse.quote(item.get('keyword', 'product'))
-                # تم إضافة كلمة luxury و studio lighting لضمان خروج الصورة بشكل احترافي
-                img_url = f"https://image.pollinations.ai/prompt/high%20end%20product%20photography%20of%20{safe_keyword}%20luxury%20studio%20lighting?width=600&height=400&nologo=true"
                 
-                # عرض الصورة
-                st.image(img_url, use_container_width=True, caption=f"AI Generated Concept for {item['keyword']}")
+                # 🛡️ فلتر تنظيف الكلمة المفتاحية (حذف أي مسافات أو رموز تكسر الرابط)
+                raw_keyword = item.get('keyword', 'luxury')
+                clean_keyword = re.sub(r'[^a-zA-Z0-9]', '', raw_keyword)
+                if not clean_keyword: clean_keyword = 'product'
+                
+                # بناء رابط مشفر ومحمي تماماً
+                prompt_text = f"commercial high end studio photography of a {clean_keyword}, luxury dark background, 8k"
+                safe_prompt = urllib.parse.quote_plus(prompt_text)
+                
+                # إضافة seed لضمان سرعة الرد وعدم تكرار الصورة بين المنتجات
+                img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=600&height=400&nologo=true&seed={i+100}"
+                
+                st.image(img_url, use_container_width=True)
                 
                 st.markdown(f"<h3 style='margin-top:15px;'>{item['name']}</h3>", unsafe_allow_html=True)
                 st.markdown(f"<span style='color:#d4af37; font-weight:bold; font-size:1.2rem;'>{item['price']}</span> | Trend Score: {item['score']} ↗", unsafe_allow_html=True)
                 
                 if st.button(f"✨ Build Brand Strategy", key=f"btn_{i}", use_container_width=True):
                     with st.spinner("Crafting your luxury brand..."):
-                        prompt = f"""Act as a high-end luxury brand strategist. For the trending product '{item['name']}' priced at {item['price']}, provide:
-                        1. A sophisticated, premium Brand Name.
+                        prompt = f"""Act as a high-end luxury brand strategist. For the product '{item['name']}', provide:
+                        1. A premium Brand Name.
                         2. A short, elegant Tagline.
                         3. A brief luxury description targeting high-end clientele."""
                         
