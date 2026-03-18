@@ -1,19 +1,21 @@
 import streamlit as st
 import requests
+import json
+import urllib.parse
 
 # ==========================================
 # 1. الإعدادات الأساسية
 # ==========================================
-st.set_page_config(page_title="WAFEEQ AI | Luxury Intelligence", page_icon="✨", layout="wide")
+st.set_page_config(page_title="WAFEEQ AI | Live Market Radar", page_icon="📡", layout="wide")
 
 if "GOOGLE_API_KEY" in st.secrets:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
 else:
-    st.error("⚠️ لم يتم العثور على المفتاح السري (GOOGLE_API_KEY) في الخزنة.")
+    st.error("⚠️ لم يتم العثور على المفتاح السري (GOOGLE_API_KEY).")
     st.stop()
 
 # ==========================================
-# 2. العقل المدبر (الاتصال المستقر والسريع)
+# 2. محركات الذكاء الاصطناعي (الاتصال المباشر)
 # ==========================================
 @st.cache_data(ttl=3600)
 def get_free_tier_models():
@@ -22,24 +24,16 @@ def get_free_tier_models():
         res = requests.get(url)
         if res.status_code == 200:
             models = res.json().get('models', [])
-            valid_models = []
-            for m in models:
-                name = m.get('name', '')
-                methods = m.get('supportedGenerationMethods', [])
-                if 'generateContent' in methods and 'vision' not in name and 'aqa' not in name and 'embedding' not in name:
-                    valid_models.append(name)
-            # وضع الموديلات المجانية والسريعة (Flash) في المقدمة لتجنب رسوم أو توقف
+            valid_models = [m['name'] for m in models if 'generateContent' in m.get('supportedGenerationMethods', []) and 'vision' not in m['name'] and 'aqa' not in m['name'] and 'embedding' not in m['name']]
             valid_models.sort(key=lambda x: (0 if 'flash' in x.lower() else 1, x))
             return valid_models
         return []
     except:
         return []
 
-def generate_brand_smart(prompt):
+def call_gemini(prompt):
     models = get_free_tier_models()
-    if not models:
-        return "❌ لم نعثر على أي موديل صالح للعمل."
-        
+    if not models: return "Error: No models found."
     for model_name in models:
         gen_url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={API_KEY}"
         payload = {"contents": [{"parts":[{"text": prompt}]}]}
@@ -50,27 +44,46 @@ def generate_brand_smart(prompt):
                 return res.json()['candidates'][0]['content']['parts'][0]['text']
         except:
             continue
-    return "❌ نعتذر، هناك ضغط على خوادم الذكاء الاصطناعي حالياً."
+    return "Error: Request failed."
 
 # ==========================================
-# 3. التصميم الفاخر (Luxury UI & CSS)
+# 3. محرك جلب البيانات الحية (Live Data Engine)
+# ==========================================
+def fetch_live_trends(niche, platform):
+    # نطلب من الذكاء الاصطناعي أن يعمل كمحلل بيانات ويرجع لنا JSON فقط
+    prompt = f"""
+    Act as an e-commerce market analyzer. Find 2 currently trending products in the '{niche}' niche on {platform}.
+    Return ONLY a valid JSON array. Do not write any markdown, just the JSON.
+    Format exactly like this:
+    [
+      {{"name": "Product 1 Name", "price": "$XX.XX", "score": "98", "keyword": "one single word for image search"}},
+      {{"name": "Product 2 Name", "price": "$YY.YY", "score": "95", "keyword": "one single word for image search"}}
+    ]
+    """
+    response = call_gemini(prompt)
+    try:
+        # تنظيف الرد من أي نصوص زائدة (مثل ```json)
+        clean_json = response.replace('```json', '').replace('```', '').strip()
+        return json.loads(clean_json)
+    except Exception as e:
+        return None
+
+# ==========================================
+# 4. التصميم الفاخر (CSS)
 # ==========================================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+@import url('[https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap](https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap)');
+@import url('[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css)');
 
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Lato', sans-serif; }
 #MainMenu, footer, header { visibility: hidden !important; display: none !important; }
-[data-testid="stDecoration"], [class*="viewerBadge"], a[href^="https://streamlit.io/cloud"] { display: none !important; }
+[data-testid="stDecoration"], [class*="viewerBadge"], a[href^="[https://streamlit.io/cloud](https://streamlit.io/cloud)"] { display: none !important; }
 
-.hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; text-align: center; color: #ffffff; margin-top: 1rem; margin-bottom: 2rem;}
+.hero-title { font-family: 'Playfair Display', serif; font-size: 3rem; text-align: center; color: #ffffff; margin-top: 1rem; margin-bottom: 1rem;}
 .hero-title span { color: #d4af37; font-style: italic; }
 
-.platform-card { background-color: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 12px; padding: 25px; transition: 0.3s; text-align: center; height: 100%; margin-bottom: 15px;}
-.platform-card:hover { border-color: #d4af37; background-color: #121212; transform: translateY(-5px); }
-.platform-icon { font-size: 2.5rem; color: #d4af37; margin-bottom: 15px; }
-.platform-name { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 10px;}
+.search-box { background-color: #111; padding: 30px; border-radius: 12px; border: 1px solid #d4af37; margin-bottom: 30px; text-align: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);}
 
 div.stButton > button { background-color: #d4af37; color: #000 !important; font-weight: 700; border: none; border-radius: 4px; padding: 10px 20px; transition: 0.3s; width: 100%;}
 div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
@@ -81,67 +94,74 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 15px rgba(
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. محرك التطبيق وقاعدة البيانات
+# 5. واجهة المستخدم والتفاعل
 # ==========================================
 if 'page' not in st.session_state: st.session_state.page = 'home'
 
 st.markdown('<div class="logo-text">WAFEEQ <span>AI</span></div>', unsafe_allow_html=True)
 
-db = {
-    "Amazon": [
-        {"name": "Minimalist Ceramic Watch", "price": "$120", "score": "97", "img": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600"},
-        {"name": "Handcrafted Leather Bag", "price": "$250", "score": "94", "img": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600"}
-    ]
-}
-
-# --- صفحة الأسواق ---
+# --- صفحة البحث الرئيسية ---
 if st.session_state.page == 'home':
-    st.markdown('<div class="hero-title">Discover Trending Products<br>Across <span>Every Platform</span></div>', unsafe_allow_html=True)
-    cols = st.columns(3)
-    platforms = [("fa-brands fa-amazon", "Amazon"), ("fa-brands fa-tiktok", "TikTok Shop"), ("fa-solid fa-cart-shopping", "AliExpress")]
+    st.markdown('<div class="hero-title">Live Trend Radar<br>Across <span>Any Niche</span></div>', unsafe_allow_html=True)
     
-    for i, (icon, name) in enumerate(platforms):
-        with cols[i]:
-            st.markdown(f'<div class="platform-card"><div class="platform-icon"><i class="{icon}"></i></div><div class="platform-name">{name}</div></div>', unsafe_allow_html=True)
-            if st.button(f"Explore {name}", key=f"p_{i}"):
-                st.session_state.platform = name
-                st.session_state.page = 'details'
-                st.rerun()
+    st.markdown('<div class="search-box">', unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#fff; margin-bottom:20px;'>🔍 What niche are you analyzing today?</h3>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        niche_input = st.text_input("", placeholder="e.g., Smart Home, Pet Accessories, Minimalist Jewelry...", label_visibility="collapsed")
+    with col2:
+        platform_input = st.selectbox("", ["Amazon", "TikTok Shop", "AliExpress"], label_visibility="collapsed")
+    
+    if st.button("🚀 Scan Live Market"):
+        if niche_input:
+            st.session_state.niche = niche_input
+            st.session_state.platform = platform_input
+            st.session_state.page = 'results'
+            st.rerun()
+        else:
+            st.warning("Please enter a niche to scan.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- صفحة المنتجات والذكاء الاصطناعي ---
-elif st.session_state.page == 'details':
-    if st.button("← Back to Platforms"):
+# --- صفحة النتائج (البيانات الحية) ---
+elif st.session_state.page == 'results':
+    if st.button("← Back to Radar"):
         st.session_state.page = 'home'
         st.rerun()
     
-    st.markdown(f"<h2>{st.session_state.platform} <span style='color:#d4af37;'>Trending Radar</span></h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2>Live Results for <span style='color:#d4af37;'>'{st.session_state.niche}'</span> on {st.session_state.platform}</h2>", unsafe_allow_html=True)
     st.write("---")
     
-    items = db.get(st.session_state.platform, db["Amazon"])
-    cols = st.columns(2)
-    
-    for i, item in enumerate(items):
-        with cols[i]:
-            st.image(item['img'], use_container_width=True)
-            st.markdown(f"<h3 style='margin-top:15px;'>{item['name']}</h3>", unsafe_allow_html=True)
-            st.markdown(f"<span style='color:#d4af37; font-weight:bold; font-size:1.2rem;'>{item['price']}</span> | Trend Score: {item['score']}", unsafe_allow_html=True)
-            
-            if st.button(f"✨ Build Brand Strategy", key=f"btn_{i}"):
-                with st.spinner("AI is crafting your luxury strategy..."):
-                    prompt = f"""Act as a luxury brand strategist. For the product '{item['name']}', provide:
-                    1. A sophisticated, premium Brand Name.
-                    2. A short, elegant Tagline.
-                    3. A one-paragraph luxury description targeting high-end clientele.
-                    Make it sound highly professional and exclusive."""
-                    
-                    result = generate_brand_smart(prompt)
-                    
-                    if "❌" in result:
-                        st.error(result)
-                    else:
+    with st.spinner("📡 Intercepting live market data... Please wait..."):
+        # جلب البيانات الحية في نفس اللحظة!
+        if 'live_data' not in st.session_state or st.session_state.get('last_niche') != st.session_state.niche:
+            st.session_state.live_data = fetch_live_trends(st.session_state.niche, st.session_state.platform)
+            st.session_state.last_niche = st.session_state.niche
+
+    if not st.session_state.live_data:
+        st.error("⚠️ فشل في جلب البيانات الحية، يرجى المحاولة مرة أخرى.")
+    else:
+        cols = st.columns(2)
+        for i, item in enumerate(st.session_state.live_data):
+            with cols[i]:
+                # جلب صورة ديناميكية بناءً على الكلمة المفتاحية للمنتج
+                safe_keyword = urllib.parse.quote(item['keyword'])
+                img_url = f"[https://loremflickr.com/600/400/](https://loremflickr.com/600/400/){safe_keyword},product,luxury/all"
+                
+                st.image(img_url, use_container_width=True)
+                st.markdown(f"<h3 style='margin-top:15px;'>{item['name']}</h3>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color:#d4af37; font-weight:bold; font-size:1.2rem;'>{item['price']}</span> | Trend Score: {item['score']} ↗", unsafe_allow_html=True)
+                
+                if st.button(f"✨ Build Brand for this", key=f"btn_{i}"):
+                    with st.spinner("AI is crafting your luxury strategy..."):
+                        prompt = f"""Act as a luxury brand strategist. For the trending product '{item['name']}' priced at {item['price']}, provide:
+                        1. A sophisticated, premium Brand Name.
+                        2. A short, elegant Tagline.
+                        3. A one-paragraph luxury description targeting high-end clientele."""
+                        
+                        result = call_gemini(prompt)
                         st.session_state[f"res_{i}"] = result
                         st.balloons()
-            
-            # عرض النتيجة في المربع ذو الإطار الذهبي
-            if f"res_{i}" in st.session_state:
-                st.markdown(f"<div style='background-color:#111; padding:20px; border-radius:8px; border-left:4px solid #d4af37; margin-top:15px; color:#ddd; line-height:1.6;'>{st.session_state[f'res_{i}']}</div>", unsafe_allow_html=True)
+                
+                if f"res_{i}" in st.session_state:
+                    st.markdown(f"<div style='background-color:#111; padding:20px; border-radius:8px; border-left:4px solid #d4af37; margin-top:15px; color:#ddd; line-height:1.6;'>{st.session_state[f'res_{i}']}</div>", unsafe_allow_html=True)
