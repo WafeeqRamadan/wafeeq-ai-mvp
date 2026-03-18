@@ -1,58 +1,90 @@
+
 import streamlit as st
-import google.generativeai as genai
+import requests
 import json
 import urllib.parse
 import re
 
 # ==========================================
-# 1. الإعدادات الأساسية
+# 1. إعدادات الصفحة
 # ==========================================
 st.set_page_config(page_title="WAFEEQ AI | Live Market Radar", page_icon="👑", layout="wide")
 
 if "GOOGLE_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    API_KEY = st.secrets["GOOGLE_API_KEY"]
 else:
-    st.error("⚠️ لم يتم العثور على المفتاح السري في إعدادات Streamlit.")
+    st.error("⚠️ لم يتم العثور على المفتاح السري في إعدادات الخزنة.")
     st.stop()
 
 # ==========================================
-# 2. محرك الذكاء الاصطناعي (الجيل 2.0)
+# 2. محرك الذكاء الاصطناعي (الاتصال المباشر الصارم)
 # ==========================================
-def generate_ai_content(prompt):
-    # نستهدف الموديل الجديد الموجود في حسابك أولاً، ثم الموديل الكلاسيكي كبديل
-    models_to_try = ['gemini-2.0-flash-lite', 'gemini-1.5-flash']
-    last_error = ""
+@st.cache_data(ttl=3600)
+def get_best_models():
+    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={API_KEY}"
+    try:
+        res = requests.get(url)
+        if res.status_code == 200:
+            models = res.json().get('models', [])
+            valid_models = [m['name'] for m in models if 'generateContent' in m.get('supportedGenerationMethods', []) and 'vision' not in m['name'] and 'aqa' not in m['name'] and 'embedding' not in m['name'] and 'audio' not in m['name']]
+            # إعطاء الأولوية القصوى للموديلات السريعة الحديثة
+            valid_models.sort(key=lambda x: (
+                0 if '2.5-flash' in x else
+                1 if '2.0-flash' in x else 
+                2 if '1.5-flash' in x else 
+                3 if 'flash' in x else 4, x))
+            return valid_models
+        return []
+    except:
+        return []
+
+def call_gemini_direct(prompt):
+    models = get_best_models()
+    if not models: return "Error: No valid models found. Check API key or Region."
     
-    for model_name in models_to_try:
+    last_err = ""
+    for model_name in models:
+        url = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={API_KEY}"
+        payload = {"contents": [{"parts":[{"text": prompt}]}]}
         try:
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
-            return response.text
+            res = requests.post(url, headers={'Content-Type': 'application/json'}, json=payload)
+            if res.status_code == 200:
+                return res.json()['candidates'][0]['content']['parts'][0]['text']
+            else:
+                last_err = f"{res.status_code} - {res.text}"
         except Exception as e:
-            last_error = str(e)
+            last_err = str(e)
             continue
-            
-    return f"Error: {last_error}"
+    return f"Error: {last_err}"
 
 # ==========================================
-# 3. محرك جلب البيانات الحية (الرادار)
+# 3. محرك الرادار (مع معالجة أخطاء JSON)
 # ==========================================
 def fetch_live_trends(niche, platform):
     prompt = f"""
     Act as an expert e-commerce product researcher. Find 2 currently highly trending and profitable products in the '{niche}' niche on {platform}.
-    Return ONLY a valid JSON array. Do not include markdown formatting like ```json.
+    Return ONLY a valid JSON array. Do not include markdown formatting or backticks.
     Format exactly like this:
     [
-      {{"name": "Product 1 Name", "price": "$XX.XX", "score": "98", "keyword": "OneSingleEnglishWord"}},
-      {{"name": "Product 2 Name", "price": "$YY.YY", "score": "95", "keyword": "OneSingleEnglishWord"}}
+      {{"name": "Product 1 Name", "price": "$XX.XX", "score": "98", "keyword": "Dress"}},
+      {{"name": "Product 2 Name", "price": "$YY.YY", "score": "95", "keyword": "Watch"}}
     ]
-    IMPORTANT: "keyword" must be exactly ONE english word describing the object (e.g. Dress, Watch, Mug).
+    IMPORTANT: "keyword" MUST be exactly ONE simple English word describing the item (e.g. Mug, Shirt, Lamp).
     """
-    response = generate_ai_content(prompt)
+    response = call_gemini_direct(prompt)
+    
+    if "Error:" in response:
+        st.error(f"⚠️ فشل الاتصال بخوادم جوجل: {response}")
+        return None
+        
     try:
         clean_json = response.replace('```json', '').replace('```', '').strip()
+        match = re.search(r'\[.*\]', clean_json, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
         return json.loads(clean_json)
     except Exception as e:
+        st.error(f"⚠️ فشل في قراءة الرد. الرد الأصلي كان:\n{response}")
         return None
 
 # ==========================================
@@ -60,11 +92,11 @@ def fetch_live_trends(niche, platform):
 # ==========================================
 st.markdown("""
 <style>
-@import url('[https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap](https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap)');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
 
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Lato', sans-serif; }
 #MainMenu, footer, header { visibility: hidden !important; display: none !important; }
-[data-testid="stDecoration"], [class*="viewerBadge"], a[href^="[https://streamlit.io/cloud](https://streamlit.io/cloud)"] { display: none !important; }
+[data-testid="stDecoration"], [class*="viewerBadge"], a[href^="https://streamlit.io/cloud"] { display: none !important; }
 
 .hero-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; text-align: center; color: #ffffff; margin-top: 2rem; margin-bottom: 3rem;}
 .hero-title span { color: #d4af37; font-style: italic; }
@@ -78,8 +110,7 @@ div.stButton > button:hover { background-color: #fff; box-shadow: 0 0 20px rgba(
 .stTextInput input, .stSelectbox div[data-baseweb="select"] > div { background-color: #111 !important; color: #fff !important; border: 1px solid #333 !important; border-radius: 6px !important; padding: 10px !important;}
 .stTextInput input:focus, .stSelectbox div[data-baseweb="select"] > div:focus { border-color: #d4af37 !important; box-shadow: 0 0 5px rgba(212, 175, 55, 0.5) !important; }
 
-/* تحسين شكل الصور المحدثة */
-img { border-radius: 8px; border: 1px solid #222; }
+img { border-radius: 8px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -126,20 +157,18 @@ elif st.session_state.page == 'results':
             st.session_state.last_niche = st.session_state.niche
 
     if not st.session_state.live_data:
-        st.error("⚠️ فشل في تحليل هذا السوق حالياً. الذكاء الاصطناعي يواجه ضغطاً، يرجى المحاولة مرة أخرى.")
+        st.info("لم يتم جلب المنتجات. يرجى التحقق من رسالة الخطأ أعلاه وإعادة المحاولة.")
     else:
         cols = st.columns(2)
         for i, item in enumerate(st.session_state.live_data):
             with cols[i % 2]:
                 
-                # توليد صورة احترافية محمية من الأعطال
-                raw_keyword = item.get('keyword', 'luxury')
-                clean_keyword = re.sub(r'[^a-zA-Z0-9]', '', raw_keyword)
-                if not clean_keyword: clean_keyword = 'product'
+                # 🛡️ توليد صورة فخمة 100% موثوقة (خلفية سوداء + نص ذهبي)
+                raw_keyword = item.get('keyword', 'Product')
+                clean_keyword = re.sub(r'[^a-zA-Z0-9]', '', raw_keyword).capitalize()
+                if not clean_keyword: clean_keyword = 'Trend'
                 
-                safe_prompt = urllib.parse.quote_plus(f"high end commercial product photography of {clean_keyword}, luxury dark theme, 8k resolution")
-                img_url = f"[https://image.pollinations.ai/prompt/](https://image.pollinations.ai/prompt/){safe_prompt}?width=600&height=400&nologo=true&seed={i+50}"
-                
+                img_url = f"https://placehold.co/600x400/111111/d4af37?text={clean_keyword}"
                 st.image(img_url, use_container_width=True)
                 
                 st.markdown(f"<h3 style='margin-top:15px;'>{item['name']}</h3>", unsafe_allow_html=True)
@@ -152,7 +181,7 @@ elif st.session_state.page == 'results':
                         2. A short, elegant Tagline.
                         3. A brief luxury description targeting high-end clientele."""
                         
-                        result = generate_ai_content(prompt)
+                        result = call_gemini_direct(prompt)
                         
                         if "Error" in result:
                             st.error(result)
