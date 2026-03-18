@@ -7,7 +7,7 @@ import re
 # ==========================================
 # 1. الإعدادات الأساسية
 # ==========================================
-st.set_page_config(page_title="WAFEEQ AI | Luxury Intelligence", page_icon="✦", layout="wide")
+st.set_page_config(page_title="WAFEEQ AI | The Omni-System", page_icon="✦", layout="wide")
 
 if "GOOGLE_API_KEY" in st.secrets:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
@@ -16,7 +16,7 @@ else:
     st.stop()
 
 # ==========================================
-# 2. محرك الذكاء الاصطناعي (API)
+# 2. محركات الذكاء الاصطناعي والمحاكاة
 # ==========================================
 @st.cache_data(ttl=3600)
 def get_best_models():
@@ -52,7 +52,7 @@ def fetch_live_trends(niche, platform):
       {{"name": "Minimalist Leather Tote", "price": "$189.00", "score": "94", "category": "FASHION", "keyword": "LeatherTote"}},
       {{"name": "Wireless ANC Earbuds Pro", "price": "$159.99", "score": "91", "category": "ELECTRONICS", "keyword": "Earbuds"}}
     ]
-    IMPORTANT: "keyword" MUST be exactly ONE simple English word describing the item for image generation.
+    IMPORTANT: "keyword" MUST be exactly ONE simple English word for image generation.
     """
     response = call_gemini_direct(prompt)
     if "Error:" in response: return None
@@ -62,18 +62,45 @@ def fetch_live_trends(niche, platform):
         return json.loads(match.group(0)) if match else json.loads(clean_json)
     except: return None
 
+# حاسبة الربح الهندسي (محاكاة مالية دقيقة)
+def calculate_true_profit(price_str):
+    try:
+        p = float(re.sub(r'[^\d.]', '', price_str))
+        cogs = p * 0.25      # تكلفة المنتج التقريبية
+        shipping = p * 0.15  # الشحن
+        stripe = (p * 0.029) + 0.30 # بوابات الدفع
+        cpa = p * 0.30       # تكلفة الإعلان للعميل الواحد
+        net = p - (cogs + shipping + stripe + cpa)
+        margin = (net / p) * 100
+        
+        return f"""
+        <div style='background:#0a0a0a; border:1px solid #333; padding:15px; border-radius:8px; font-family:monospace; margin-bottom:15px;'>
+            <div style='color:#888; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:10px; font-size:0.8rem; letter-spacing:1px;'>PRECISION MARGIN ARCHITECT</div>
+            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Retail Price:</span> <span style='color:#fff;'>${p:.2f}</span></div>
+            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Sourcing (25%):</span> <span style='color:#dc3545;'>-${cogs:.2f}</span></div>
+            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Shipping (15%):</span> <span style='color:#dc3545;'>-${shipping:.2f}</span></div>
+            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Gateway Fees:</span> <span style='color:#dc3545;'>-${stripe:.2f}</span></div>
+            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Ad CPA (30%):</span> <span style='color:#dc3545;'>-${cpa:.2f}</span></div>
+            <div style='border-top:1px dashed #444; margin:10px 0;'></div>
+            <div style='display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem;'>
+                <span style='color:#d4af37;'>NET PROFIT:</span> 
+                <span style='color:#20c997;'>${net:.2f} ({margin:.1f}%)</span>
+            </div>
+        </div>
+        """
+    except:
+        return "<div style='color:#dc3545;'>⚠️ Error calculating margins.</div>"
+
 # ==========================================
-# 3. التصميم الفاخر (CSS المطابق للصور)
+# 3. التصميم الفاخر (CSS)
 # ==========================================
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap');
 
 html, body, [data-testid="stAppViewContainer"] { background-color: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; }
-#MainMenu, footer, header { display: none !important; }
-[data-testid="stDecoration"] { display: none !important; }
+#MainMenu, footer, header, [data-testid="stDecoration"] { display: none !important; }
 
-/* Navbar Styling */
 .custom-navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #1a1a1a; margin-bottom: 40px; }
 .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #fff; line-height: 1; letter-spacing: 2px;}
 .nav-logo span { color: #d4af37; }
@@ -82,13 +109,11 @@ html, body, [data-testid="stAppViewContainer"] { background-color: #0a0a0a; colo
 .btn-login { background: transparent; border: 1px solid #333; color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 0.9rem; cursor: pointer;}
 .btn-started { background: #d4af37; border: none; color: #000; padding: 8px 20px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer;}
 
-/* Hero Section */
 .hero-pill { background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #d4af37; padding: 6px 15px; border-radius: 20px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; display: inline-block; margin-bottom: 20px;}
 .hero-title { font-family: 'Playfair Display', serif; font-size: 4.5rem; text-align: center; color: #ffffff; line-height: 1.1; margin-bottom: 20px;}
 .hero-title span { color: #d4af37; font-style: italic; font-weight: 400;}
 .hero-subtitle { text-align: center; color: #888; font-size: 1.1rem; max-width: 600px; margin: 0 auto 40px auto; line-height: 1.6;}
 
-/* Platform Cards */
 .platform-grid-card { background-color: #111; border: 1px solid #222; border-radius: 12px; padding: 25px; transition: 0.3s; height: 100%; position: relative;}
 .platform-grid-card:hover { border-color: #d4af37; background-color: #151515; }
 .p-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px;}
@@ -101,7 +126,6 @@ html, body, [data-testid="stAppViewContainer"] { background-color: #0a0a0a; colo
 .p-desc { color: #666; font-size: 0.9rem; margin-bottom: 25px;}
 .p-stats { color: #d4af37; font-size: 0.85rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
 
-/* Product Cards */
 .radar-header { display: flex; align-items: center; gap: 15px; margin-bottom: 5px;}
 .radar-sub { color: #666; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px;}
 .product-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 15px; margin-bottom: 15px;}
@@ -110,21 +134,25 @@ html, body, [data-testid="stAppViewContainer"] { background-color: #0a0a0a; colo
 .p-category { color: #666; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;}
 .p-score { border: 1px solid #333; color: #d4af37; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;}
 .p-name { color: #fff; font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; line-height: 1.3;}
-.p-price { color: #d4af37; font-size: 1.3rem; font-family: 'Playfair Display', serif;}
+.p-price { color: #d4af37; font-size: 1.3rem; font-family: 'Playfair Display', serif; margin-bottom: 15px;}
 
-/* Buttons */
+/* Secondary Buttons */
+.btn-sec { background-color: #1a1a1a !important; color: #fff !important; border: 1px solid #333 !important; font-size: 0.8rem !important; padding: 8px !important; margin-bottom:10px;}
+.btn-sec:hover { border-color: #d4af37 !important; color: #d4af37 !important; }
+
 div.stButton > button { background-color: #c5a059; color: #000 !important; font-weight: 600; border: none; border-radius: 8px; padding: 12px; transition: 0.3s; width: 100%;}
 div.stButton > button:hover { background-color: #e8c37b; transform: translateY(-2px);}
+
 .search-input-container { max-width: 500px; margin: 0 auto; }
+.stSelectbox div[data-baseweb="select"] > div { background-color: #1a1a1a !important; color: #fff !important; border: 1px solid #333 !important; border-radius: 8px !important; font-size: 0.9rem !important;}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. واجهة المستخدم والتنقل
+# 4. واجهة المستخدم
 # ==========================================
 if 'page' not in st.session_state: st.session_state.page = 'landing'
 
-# شريط التنقل العلوي (Navbar)
 st.markdown("""
 <div class="custom-navbar">
     <div class="logo-box">
@@ -138,7 +166,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- الصفحة الافتتاحية (Landing Page) ---
 if st.session_state.page == 'landing':
     st.markdown("""
     <div style="text-align: center;">
@@ -154,13 +181,12 @@ if st.session_state.page == 'landing':
             st.session_state.page = 'platforms'
             st.rerun()
 
-# --- صفحة اختيار المنصة (Platforms Page) ---
 elif st.session_state.page == 'platforms':
     st.markdown('<div class="hero-title" style="font-size: 3rem; margin-top:0;">Choose Your <span>Platform</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Select a marketplace to explore trending products</div>', unsafe_allow_html=True)
     
     st.markdown('<div class="search-input-container">', unsafe_allow_html=True)
-    niche = st.text_input("", placeholder="Enter a niche (e.g. Fashion, Tech, Home)...", label_visibility="collapsed")
+    niche = st.text_input("", placeholder="Enter a niche (e.g. Home Decor, Fitness)...", label_visibility="collapsed")
     st.markdown('</div><br>', unsafe_allow_html=True)
     
     platforms = [
@@ -183,17 +209,15 @@ elif st.session_state.page == 'platforms':
             """, unsafe_allow_html=True)
             if st.button(f"Explore {p['name']}", key=f"btn_p_{i}"):
                 st.session_state.platform = p['name']
-                st.session_state.niche = niche if niche else "Luxury Goods"
+                st.session_state.niche = niche if niche else "Luxury Tech"
                 st.session_state.page = 'radar'
                 st.rerun()
 
-# --- صفحة الرادار والمنتجات (Radar Page) ---
 elif st.session_state.page == 'radar':
     if st.button("← Back to Platforms"):
         st.session_state.page = 'platforms'
         st.rerun()
     
-    # Header Section matches the 3rd image
     st.markdown(f"""
     <div class="radar-header">
         <div class="p-icon amazon" style="margin-bottom:0; width:35px; height:35px; font-size:1rem;">{st.session_state.platform[0]}</div>
@@ -213,12 +237,11 @@ elif st.session_state.page == 'radar':
         cols = st.columns(3)
         for i, item in enumerate(st.session_state.live_data):
             with cols[i % 3]:
-                # Image Generation
+                # الصورة الفخمة
                 clean_keyword = re.sub(r'[^a-zA-Z0-9]', '', item.get('keyword', 'luxury'))
                 safe_prompt = urllib.parse.quote_plus(f"high end commercial photography of {clean_keyword}, cinematic lighting, dark background, 8k")
-                img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=400&height=300&nologo=true&seed={i+10}"
+                img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=400&height=300&nologo=true&seed={i+20}"
                 
-                # Product Card HTML
                 st.markdown(f"""
                 <div class="product-card">
                     <img src="{img_url}" class="product-img" onerror="this.src='https://placehold.co/400x300/111/d4af37?text={clean_keyword}';">
@@ -231,12 +254,46 @@ elif st.session_state.page == 'radar':
                 </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button("✦ Generate Luxury Brand", key=f"btn_b_{i}"):
-                    with st.spinner("Crafting brand strategy..."):
-                        prompt = f"Act as a luxury brand strategist. For '{item.get('name')}', provide: 1. Brand Name 2. Tagline 3. Short luxury description."
+                # أزرار الاستخبارات المصغرة (فجوات السوق وحاسبة الربح)
+                col_btn1, col_btn2 = st.columns(2)
+                with col_btn1:
+                    if st.button("🔍 Market Gap", key=f"gap_{i}"):
+                        st.session_state[f"show_gap_{i}"] = not st.session_state.get(f"show_gap_{i}", False)
+                        st.session_state[f"show_profit_{i}"] = False
+                with col_btn2:
+                    if st.button("⚖️ Calculate Profit", key=f"profit_{i}"):
+                        st.session_state[f"show_profit_{i}"] = not st.session_state.get(f"show_profit_{i}", False)
+                        st.session_state[f"show_gap_{i}"] = False
+
+                # عرض الفجوة (Market Gap Finder)
+                if st.session_state.get(f"show_gap_{i}"):
+                    if f"gap_data_{i}" not in st.session_state:
+                        with st.spinner("Analyzing market gaps..."):
+                            gap_prompt = f"Act as an e-commerce intelligence agent. Identify ONE major customer complaint/market gap for '{item.get('name')}' and state how to fix it to beat competitors. Keep it under 2 sentences."
+                            st.session_state[f"gap_data_{i}"] = call_gemini_direct(gap_prompt)
+                    st.info(f"💡 **Market Gap:** {st.session_state[f'gap_data_{i}']}")
+
+                # عرض حاسبة الربح (Margin Architect)
+                if st.session_state.get(f"show_profit_{i}"):
+                    st.markdown(calculate_true_profit(item.get('price')), unsafe_allow_html=True)
+
+                st.markdown("<hr style='border-color:#222; margin:15px 0;'>", unsafe_allow_html=True)
+                
+                # قائمة التوطين الثقافي (Cultural Localization)
+                st.markdown("<div style='color:#888; font-size:0.8rem; margin-bottom:5px;'>🌍 Select Target Market:</div>", unsafe_allow_html=True)
+                target_market = st.selectbox("", ["USA (English)", "Saudi Arabia (Arabic)", "UK (English)", "UAE (Arabic)"], key=f"market_{i}", label_visibility="collapsed")
+                
+                # زر التوليد النهائي
+                if st.button("✦ Generate Localized Brand", key=f"btn_b_{i}", use_container_width=True):
+                    with st.spinner("Crafting localized luxury brand..."):
+                        prompt = f"""Act as a luxury brand strategist. Product: '{item.get('name')}'. Target Market: '{target_market}'. 
+                        Provide: 1. A premium Brand Name 2. A Tagline 3. A short luxury description. 
+                        CRITICAL: You MUST write the response in the native language of the '{target_market}' and use local cultural nuances/slang to appeal directly to those specific consumers."""
+                        
                         res = call_gemini_direct(prompt)
                         st.session_state[f"res_{i}"] = res
                         st.balloons()
                 
+                # عرض النتيجة
                 if f"res_{i}" in st.session_state:
-                    st.markdown(f"<div style='background:#111; padding:20px; border-radius:12px; border:1px solid #d4af37; margin-top:10px; color:#ddd; font-size:0.9rem;'>{st.session_state[f'res_{i}']}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='background:#151515; padding:20px; border-radius:12px; border:1px solid #d4af37; margin-top:15px; color:#ddd; font-size:0.9rem; line-height:1.6;'>{st.session_state[f'res_{i}']}</div>", unsafe_allow_html=True)
