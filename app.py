@@ -98,35 +98,29 @@ st.markdown("""
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Montserrat', sans-serif; }
 #MainMenu, footer, header, [data-testid="stDecoration"] { display: none !important; }
 
-/* 🛡️ إخفاء سهم طي القائمة الجانبية بشكل نهائي لتبقى ثابتة كالجدار */
+/* 🛡️ إخفاء السهم وتجميل شريط التمرير */
 [data-testid="collapsedControl"], [data-testid="stSidebarCollapseButton"] { display: none !important; }
-
-/* 📜 تجميل شريط التمرير (Scrollbar) ليكون فخماً */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #050505; }
 ::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
 
-/* الشريط الجانبي */
+/* الشريط الجانبي واللوجو */
 [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #1a1a1a; padding-top: 20px;}
 [data-testid="stSidebarNav"] { display: none; }
-
-/* 👑 اللوجو الإمبراطوري المتراص (WAFEEQ AI بجوار بعضهما) */
 .imperial-logo-box { text-align: center; padding: 20px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 30px; }
 .imperial-logo-wrapper { display: flex; justify-content: center; align-items: baseline; gap: 8px; }
 .imperial-logo { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 700; letter-spacing: 3px; background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;}
 .imperial-ai { font-family: 'Cinzel', serif; font-size: 1.6rem; color: #fff; font-weight: 300; letter-spacing: 2px;}
 .imperial-sub { font-family: 'Montserrat', sans-serif; font-size: 0.65rem; color: #666; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; font-weight: 300;}
 
-/* أزرار القائمة الجانبية */
 div[data-testid="stSidebar"] div.stButton > button { background-color: transparent !important; color: #888 !important; font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 1rem; border: none; border-radius: 4px; padding: 10px 15px; text-align: left !important; justify-content: flex-start !important; transition: 0.3s; width: 100%; margin-bottom: 5px;}
 div[data-testid="stSidebar"] div.stButton > button:hover { color: #d4af37 !important; background-color: rgba(212, 175, 55, 0.05) !important; padding-left: 20px !important;}
 
-/* العناوين */
+/* العناوين والعدادات */
 .page-title { font-family: 'Cinzel', serif; font-size: 2.5rem; color: #fff; margin-bottom: 5px; font-weight: 600;}
 .page-sub { font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; font-weight: 300;}
 
-/* 📊 العدادات مع تأثير الوهج الذهبي عند التمرير */
 .kpi-card { background: linear-gradient(145deg, #0d0d0d, #111111); border: 1px solid #1a1a1a; border-radius: 12px; padding: 30px; text-align: center; position: relative; overflow: hidden; height:100%; transition: all 0.4s ease;}
 .kpi-card:hover { border-color: rgba(212, 175, 55, 0.4); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.05); transform: translateY(-3px);}
 .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, #d4af37, transparent); }
@@ -136,6 +130,21 @@ div[data-testid="stSidebar"] div.stButton > button:hover { color: #d4af37 !impor
 
 .main-btn > button { background-color: #c5a059 !important; color: #000 !important; font-weight: 600; font-family: 'Montserrat', sans-serif; border: none; border-radius: 6px; padding: 12px; transition: 0.3s; width: 100%; letter-spacing: 1px;}
 .main-btn > button:hover { background-color: #e8c37b !important; transform: translateY(-2px);}
+
+/* 🌍 خريطة النبض التفاعلية (Heatmap CSS) */
+.heatmap-box { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; padding: 30px; margin-top: 30px; }
+.heatmap-title { font-family: 'Cinzel', serif; font-size: 1.2rem; color: #fff; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;}
+.heatmap-title span { font-family: 'Montserrat', sans-serif; font-size: 0.7rem; color: #20c997; letter-spacing: 2px; }
+.chart-container { display: flex; align-items: flex-end; justify-content: space-around; height: 180px; padding-top: 20px;}
+.bar-col { display: flex; flex-direction: column; align-items: center; width: 60px; gap: 10px; }
+.bar { width: 100%; background: linear-gradient(to top, rgba(212,175,55,0.1), #d4af37); border-radius: 4px 4px 0 0; position: relative; transition: height 1s ease-in-out;}
+.bar:hover { filter: brightness(1.3); box-shadow: 0 0 15px rgba(212,175,55,0.4);}
+.bar-value { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 0.8rem; font-weight: bold; font-family: 'Montserrat', sans-serif;}
+.bar-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-family: 'Montserrat', sans-serif;}
+
+/* زر التصدير (Download Button) */
+div[data-testid="stDownloadButton"] > button { background-color: #050505 !important; color: #d4af37 !important; border: 1px solid #d4af37 !important; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 6px; padding: 10px; transition: 0.3s; width: 100%; margin-top: 10px;}
+div[data-testid="stDownloadButton"] > button:hover { background-color: #d4af37 !important; color: #000 !important; }
 
 .product-card { background: #0a0a0a; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-bottom: 15px; transition: 0.3s;}
 .product-card:hover { border-color: #333; }
@@ -183,7 +192,7 @@ with st.sidebar:
 # 6. المحتوى الرئيسي (Main Content Area)
 # ==========================================
 
-# --- [1] Dashboard ---
+# --- [1] Dashboard (مع خريطة النبض المباشرة) ---
 if st.session_state.current_tab == 'dashboard':
     st.markdown('<div class="page-title">Command Center</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Global E-Commerce Overview · Live Operations</div>', unsafe_allow_html=True)
@@ -196,10 +205,21 @@ if st.session_state.current_tab == 'dashboard':
     with col3:
         st.markdown('<div class="kpi-card"><div class="kpi-title">Disputes Blocked</div><div class="kpi-value">24</div><div class="kpi-sub">🛡️ $3,120 SAVED TODAY</div></div>', unsafe_allow_html=True)
         
-    st.write("---")
-    st.markdown("<div style='text-align:center; padding:50px; color:#444; font-weight:300; letter-spacing:2px;'>[ GLOBAL HEATMAP VISUALIZATION ]<br><br>All systems operational. Proceed to the Sidebar to command your empire.</div>", unsafe_allow_html=True)
+    # 🌍 خريطة النبض العالمية (Live Heatmap Chart)
+    st.markdown("""
+    <div class="heatmap-box">
+        <div class="heatmap-title">Global Market Demand Pulse <span>● LIVE SYNC</span></div>
+        <div class="chart-container">
+            <div class="bar-col"><div class="bar" style="height: 85%;"><div class="bar-value">85%</div></div><div class="bar-label">TikTok</div></div>
+            <div class="bar-col"><div class="bar" style="height: 60%;"><div class="bar-value">60%</div></div><div class="bar-label">Amazon</div></div>
+            <div class="bar-col"><div class="bar" style="height: 92%;"><div class="bar-value">92%</div></div><div class="bar-label">AliExpress</div></div>
+            <div class="bar-col"><div class="bar" style="height: 45%;"><div class="bar-value">45%</div></div><div class="bar-label">Etsy</div></div>
+            <div class="bar-col"><div class="bar" style="height: 70%;"><div class="bar-value">70%</div></div><div class="bar-label">eBay</div></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- [2] Omni-Pulse Radar ---
+# --- [2] Omni-Pulse Radar (مع ميزة التصدير) ---
 elif st.session_state.current_tab == 'radar':
     if st.session_state.radar_step == 'select_platform':
         st.markdown('<div class="page-title">Omni-Pulse Radar</div>', unsafe_allow_html=True)
@@ -300,11 +320,7 @@ elif st.session_state.current_tab == 'radar':
                             res = call_gemini_direct(prompt)
                             st.session_state[f"render_txt_{i}"] = res
                             
-                            if "Cinematic" in visual_style:
-                                img_prompt = f"high end commercial photography of {specs}, cinematic studio lighting, dark luxury marble background, 8k resolution"
-                            else:
-                                img_prompt = f"authentic lifestyle photography of {specs}, user generated content style, realistic, held by a person in a cozy modern home environment, natural sunlight"
-                            
+                            img_prompt = f"high end commercial photography of {specs}, cinematic studio lighting, dark luxury marble background, 8k resolution" if "Cinematic" in visual_style else f"authentic lifestyle photography of {specs}, user generated content style, realistic, held by a person in a cozy modern home environment, natural sunlight"
                             safe_hero_prompt = urllib.parse.quote_plus(img_prompt)
                             st.session_state[f"render_img_{i}"] = f"https://image.pollinations.ai/prompt/{safe_hero_prompt}?width=800&height=400&nologo=true&seed={i+500}"
                             st.balloons()
@@ -318,6 +334,24 @@ elif st.session_state.current_tab == 'radar':
                             <div style='color:#ddd; font-size:0.9rem; line-height:1.6;'>{st.session_state[f'render_txt_{i}'].replace(chr(10), '<br>')}</div>
                         </div>
                         """, unsafe_allow_html=True)
+                        
+                        # 🌉 زر التصدير (Push to Store)
+                        campaign_data = json.dumps({
+                            "WAFEEQ_AI_Export": True,
+                            "Product_Name": item.get('name'),
+                            "Target_Market": target_market,
+                            "Visual_Style": visual_style,
+                            "Hero_Image_URL": st.session_state[f"render_img_{i}"],
+                            "Generated_Content": st.session_state[f"render_txt_{i}"]
+                        }, indent=4, ensure_ascii=False)
+                        
+                        st.download_button(
+                            label="⬇ Download Campaign Assets (JSON)",
+                            data=campaign_data,
+                            file_name=f"WAFEEQ_Campaign_{item.get('name').replace(' ', '_')}.json",
+                            mime="application/json",
+                            key=f"dl_{i}"
+                        )
 
 # --- [3] Trust Shield, [4] Concierge, [5] Growth Engine (كما هي من الأساس) ---
 elif st.session_state.current_tab == 'shield':
