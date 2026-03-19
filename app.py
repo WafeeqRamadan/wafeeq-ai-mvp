@@ -89,7 +89,7 @@ MARKET_LOGOS = {
 }
 
 # ==========================================
-# 3. التصميم الإمبراطوري (UI Architecture - Locked)
+# 3. التصميم الإمبراطوري المتطور (UI Architecture)
 # ==========================================
 st.markdown("""
 <style>
@@ -98,20 +98,37 @@ st.markdown("""
 html, body, [data-testid="stAppViewContainer"] { background-color: #050505; color: #e0e0e0; font-family: 'Montserrat', sans-serif; }
 #MainMenu, footer, header, [data-testid="stDecoration"] { display: none !important; }
 
+/* 🛡️ إخفاء سهم طي القائمة الجانبية بشكل نهائي لتبقى ثابتة كالجدار */
+[data-testid="collapsedControl"], [data-testid="stSidebarCollapseButton"] { display: none !important; }
+
+/* 📜 تجميل شريط التمرير (Scrollbar) ليكون فخماً */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #050505; }
+::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+/* الشريط الجانبي */
 [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #1a1a1a; padding-top: 20px;}
 [data-testid="stSidebarNav"] { display: none; }
 
+/* 👑 اللوجو الإمبراطوري المتراص (WAFEEQ AI بجوار بعضهما) */
 .imperial-logo-box { text-align: center; padding: 20px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 30px; }
-.imperial-logo { font-family: 'Cinzel', serif; font-size: 2.8rem; font-weight: 700; letter-spacing: 5px; background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; line-height: 1.2;}
+.imperial-logo-wrapper { display: flex; justify-content: center; align-items: baseline; gap: 8px; }
+.imperial-logo { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 700; letter-spacing: 3px; background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;}
+.imperial-ai { font-family: 'Cinzel', serif; font-size: 1.6rem; color: #fff; font-weight: 300; letter-spacing: 2px;}
 .imperial-sub { font-family: 'Montserrat', sans-serif; font-size: 0.65rem; color: #666; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; font-weight: 300;}
 
+/* أزرار القائمة الجانبية */
 div[data-testid="stSidebar"] div.stButton > button { background-color: transparent !important; color: #888 !important; font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 1rem; border: none; border-radius: 4px; padding: 10px 15px; text-align: left !important; justify-content: flex-start !important; transition: 0.3s; width: 100%; margin-bottom: 5px;}
-div[data-testid="stSidebar"] div.stButton > button:hover { color: #d4af37 !important; background-color: rgba(212, 175, 55, 0.05) !important; }
+div[data-testid="stSidebar"] div.stButton > button:hover { color: #d4af37 !important; background-color: rgba(212, 175, 55, 0.05) !important; padding-left: 20px !important;}
 
+/* العناوين */
 .page-title { font-family: 'Cinzel', serif; font-size: 2.5rem; color: #fff; margin-bottom: 5px; font-weight: 600;}
 .page-sub { font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; font-weight: 300;}
 
-.kpi-card { background: linear-gradient(145deg, #0d0d0d, #111111); border: 1px solid #1a1a1a; border-radius: 12px; padding: 30px; text-align: center; position: relative; overflow: hidden; height:100%;}
+/* 📊 العدادات مع تأثير الوهج الذهبي عند التمرير */
+.kpi-card { background: linear-gradient(145deg, #0d0d0d, #111111); border: 1px solid #1a1a1a; border-radius: 12px; padding: 30px; text-align: center; position: relative; overflow: hidden; height:100%; transition: all 0.4s ease;}
+.kpi-card:hover { border-color: rgba(212, 175, 55, 0.4); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.05); transform: translateY(-3px);}
 .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, #d4af37, transparent); }
 .kpi-title { font-family: 'Cinzel', serif; font-size: 0.9rem; color: #d4af37; letter-spacing: 2px; margin-bottom: 15px; text-transform: uppercase;}
 .kpi-value { font-family: 'Montserrat', sans-serif; font-size: 3rem; font-weight: 200; color: #fff; line-height: 1;}
@@ -120,14 +137,14 @@ div[data-testid="stSidebar"] div.stButton > button:hover { color: #d4af37 !impor
 .main-btn > button { background-color: #c5a059 !important; color: #000 !important; font-weight: 600; font-family: 'Montserrat', sans-serif; border: none; border-radius: 6px; padding: 12px; transition: 0.3s; width: 100%; letter-spacing: 1px;}
 .main-btn > button:hover { background-color: #e8c37b !important; transform: translateY(-2px);}
 
-.product-card { background: #0a0a0a; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-bottom: 15px;}
+.product-card { background: #0a0a0a; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-bottom: 15px; transition: 0.3s;}
+.product-card:hover { border-color: #333; }
 .product-img { width: 100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; background: #fff;}
 .p-name { color: #fff; font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; min-height: 45px;}
 .p-price { color: #d4af37; font-size: 1.4rem; font-weight: 300;}
 
 .stTextInput input, .stSelectbox div[data-baseweb="select"] > div { background-color: #111 !important; color: #fff !important; border: 1px solid #333 !important; border-radius: 6px !important; font-family: 'Montserrat', sans-serif;}
 
-/* تنسيقات للوحات الجديدة */
 .panel-box { background: #0d0d0d; border: 1px solid #222; border-radius: 12px; padding: 25px; margin-bottom: 20px;}
 .panel-header { font-family: 'Cinzel', serif; color: #d4af37; font-size: 1.2rem; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px;}
 </style>
@@ -145,8 +162,10 @@ if 'radar_step' not in st.session_state: st.session_state.radar_step = 'select_p
 with st.sidebar:
     st.markdown("""
     <div class="imperial-logo-box">
-        <div class="imperial-logo">WAFEEQ</div>
-        <div style="font-family:'Cinzel', serif; color:#fff; font-size:1.5rem; letter-spacing:10px; margin-top:-5px;">A I</div>
+        <div class="imperial-logo-wrapper">
+            <span class="imperial-logo">WAFEEQ</span>
+            <span class="imperial-ai">AI</span>
+        </div>
         <div class="imperial-sub">From Trend to Brand</div>
     </div>
     """, unsafe_allow_html=True)
@@ -180,7 +199,7 @@ if st.session_state.current_tab == 'dashboard':
     st.write("---")
     st.markdown("<div style='text-align:center; padding:50px; color:#444; font-weight:300; letter-spacing:2px;'>[ GLOBAL HEATMAP VISUALIZATION ]<br><br>All systems operational. Proceed to the Sidebar to command your empire.</div>", unsafe_allow_html=True)
 
-# --- [2] Omni-Pulse Radar (مع الاستوديو المدمج) ---
+# --- [2] Omni-Pulse Radar ---
 elif st.session_state.current_tab == 'radar':
     if st.session_state.radar_step == 'select_platform':
         st.markdown('<div class="page-title">Omni-Pulse Radar</div>', unsafe_allow_html=True)
@@ -281,7 +300,11 @@ elif st.session_state.current_tab == 'radar':
                             res = call_gemini_direct(prompt)
                             st.session_state[f"render_txt_{i}"] = res
                             
-                            img_prompt = f"high end commercial photography of {specs}, cinematic studio lighting, dark luxury marble background, 8k resolution" if "Cinematic" in visual_style else f"authentic lifestyle photography of {specs}, user generated content style, realistic, held by a person in a cozy modern home environment, natural sunlight"
+                            if "Cinematic" in visual_style:
+                                img_prompt = f"high end commercial photography of {specs}, cinematic studio lighting, dark luxury marble background, 8k resolution"
+                            else:
+                                img_prompt = f"authentic lifestyle photography of {specs}, user generated content style, realistic, held by a person in a cozy modern home environment, natural sunlight"
+                            
                             safe_hero_prompt = urllib.parse.quote_plus(img_prompt)
                             st.session_state[f"render_img_{i}"] = f"https://image.pollinations.ai/prompt/{safe_hero_prompt}?width=800&height=400&nologo=true&seed={i+500}"
                             st.balloons()
@@ -296,66 +319,47 @@ elif st.session_state.current_tab == 'radar':
                         </div>
                         """, unsafe_allow_html=True)
 
-# --- [3] Trust Shield (حارس الثقة) ---
+# --- [3] Trust Shield, [4] Concierge, [5] Growth Engine (كما هي من الأساس) ---
 elif st.session_state.current_tab == 'shield':
-    st.markdown('<div class="page-title">Trust Shield & Defender</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-sub">AI-Powered Fraud Prevention & Legal Dispute Management</div>', unsafe_allow_html=True)
-    
+    st.markdown('<div class="page-title">Trust Shield & Defender</div><div class="page-sub">AI-Powered Fraud Prevention & Legal Dispute Management</div>', unsafe_allow_html=True)
     st.markdown("<div class='panel-box'><div class='panel-header'>🚨 Active Dispute (Action Required)</div>", unsafe_allow_html=True)
     st.write("**Dispute #CB-9112** (Stripe Chargeback) - Reason: 'Product Not Received'")
     st.write("Customer: John Doe | Amount: $249.99 | Tracking: Delivered (DHL)")
-    
     st.markdown("<div class='main-btn'>", unsafe_allow_html=True)
     if st.button("✦ Generate Legal Response for Stripe"):
         with st.spinner("AI Lawyer drafting response..."):
-            prompt = "Act as an expert e-commerce legal responder. Write a strong, professional response to a Stripe chargeback for 'Product Not Received'. State that tracking shows it was delivered via DHL. Keep it concise, authoritative, and structured."
-            st.session_state.shield_response = call_gemini_direct(prompt)
+            st.session_state.shield_response = call_gemini_direct("Act as an expert e-commerce legal responder. Write a strong, professional response to a Stripe chargeback for 'Product Not Received'. State that tracking shows it was delivered via DHL. Keep it concise, authoritative, and structured.")
     st.markdown("</div>", unsafe_allow_html=True)
-    
     if "shield_response" in st.session_state:
         st.success("Draft Generated Successfully. Ready to submit to Stripe.")
         st.markdown(f"<div style='background:#111; padding:20px; border-left:4px solid #20c997; border-radius:8px; margin-top:10px; font-size:0.9rem;'>{st.session_state.shield_response}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- [4] Concierge (المساعد الموحد) ---
 elif st.session_state.current_tab == 'concierge':
-    st.markdown('<div class="page-title">Omni-Channel Concierge</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-sub">Empathetic AI Customer Support & Cart Rescue</div>', unsafe_allow_html=True)
-    
+    st.markdown('<div class="page-title">Omni-Channel Concierge</div><div class="page-sub">Empathetic AI Customer Support & Cart Rescue</div>', unsafe_allow_html=True)
     st.markdown("<div class='panel-box'><div class='panel-header'>🛒 Abandoned Cart Rescue (Live)</div>", unsafe_allow_html=True)
     st.write("**Customer:** Sarah M. (VIP Tier)")
     st.info("💬 **Customer Message:** 'I left the Elite Watch in my cart because I'm not sure if the ceramic scratches easily. Can you help?'")
-    
     st.markdown("<div class='main-btn'>", unsafe_allow_html=True)
     if st.button("✦ Generate Brand-Voice Response"):
         with st.spinner("Concierge is crafting a luxury reply..."):
-            prompt = "Act as an elite luxury brand concierge. Respond to this customer: 'I left a watch in my cart, does the ceramic scratch easily?'. Use a highly sophisticated, empathetic, and reassuring tone to close the sale. Keep it short and elegant."
-            st.session_state.concierge_response = call_gemini_direct(prompt)
+            st.session_state.concierge_response = call_gemini_direct("Act as an elite luxury brand concierge. Respond to this customer: 'I left a watch in my cart, does the ceramic scratch easily?'. Use a highly sophisticated, empathetic, and reassuring tone to close the sale. Keep it short and elegant.")
     st.markdown("</div>", unsafe_allow_html=True)
-    
     if "concierge_response" in st.session_state:
         st.markdown(f"<div style='background:#111; padding:20px; border-left:4px solid #d4af37; border-radius:8px; margin-top:10px; font-size:0.9rem;'>{st.session_state.concierge_response}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- [5] Growth Engine (محرك النمو) ---
 elif st.session_state.current_tab == 'growth':
-    st.markdown('<div class="page-title">Multi-Dimensional Growth Engine</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-sub">AI CMO: Automated Budget Scaling & Upsells</div>', unsafe_allow_html=True)
-    
+    st.markdown('<div class="page-title">Multi-Dimensional Growth Engine</div><div class="page-sub">AI CMO: Automated Budget Scaling & Upsells</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("<div class='panel-box' style='text-align:center;'><div class='panel-header'>TikTok Ad Performance</div><h2 style='color:#20c997;'>320% ROI</h2><span style='color:#888;'>High Conversion Rate</span></div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='panel-box' style='text-align:center;'><div class='panel-header'>Facebook Ad Performance</div><h2 style='color:#dc3545;'>110% ROI</h2><span style='color:#888;'>Declining Efficiency</span></div>", unsafe_allow_html=True)
-    
+    with col1: st.markdown("<div class='panel-box' style='text-align:center;'><div class='panel-header'>TikTok Ad Performance</div><h2 style='color:#20c997; font-family:Montserrat;'>320% ROI</h2><span style='color:#888;'>High Conversion Rate</span></div>", unsafe_allow_html=True)
+    with col2: st.markdown("<div class='panel-box' style='text-align:center;'><div class='panel-header'>Facebook Ad Performance</div><h2 style='color:#dc3545; font-family:Montserrat;'>110% ROI</h2><span style='color:#888;'>Declining Efficiency</span></div>", unsafe_allow_html=True)
     st.markdown("<div class='panel-box'><div class='panel-header'>📈 AI CMO Recommendation</div>", unsafe_allow_html=True)
     st.markdown("<div class='main-btn'>", unsafe_allow_html=True)
     if st.button("✦ Generate Growth & Upsell Strategy"):
         with st.spinner("AI CMO is calculating best moves..."):
-            prompt = "Act as an elite Chief Marketing Officer. The user's e-commerce store shows 320% ROI on TikTok and 110% on Facebook. Give a 1-sentence actionable advice on shifting the ad budget (Budget Teleport). Then, recommend ONE highly profitable UPSELL product they should add to the checkout page for a luxury watch brand."
-            st.session_state.growth_response = call_gemini_direct(prompt)
+            st.session_state.growth_response = call_gemini_direct("Act as an elite Chief Marketing Officer. The user's e-commerce store shows 320% ROI on TikTok and 110% on Facebook. Give a 1-sentence actionable advice on shifting the ad budget. Then, recommend ONE highly profitable UPSELL product they should add to the checkout page for a luxury watch brand.")
     st.markdown("</div>", unsafe_allow_html=True)
-    
     if "growth_response" in st.session_state:
         st.success("Strategy Ready for Execution.")
         st.markdown(f"<div style='background:#111; padding:20px; border-left:4px solid #0dcaf0; border-radius:8px; margin-top:10px; font-size:0.9rem;'>{st.session_state.growth_response}</div>", unsafe_allow_html=True)
