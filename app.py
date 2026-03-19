@@ -16,7 +16,7 @@ else:
     st.stop()
 
 # ==========================================
-# 2. محركات الذكاء الاصطناعي (Foundation Locked)
+# 2. محركات الذكاء الاصطناعي 
 # ==========================================
 @st.cache_data(ttl=3600)
 def get_best_models():
@@ -60,28 +60,6 @@ def fetch_live_trends(niche, platform):
         return json.loads(match.group(0)) if match else json.loads(clean_json)
     except: return None
 
-def calculate_true_profit(price_str):
-    try:
-        p = float(re.sub(r'[^\d.]', '', price_str))
-        cogs, shipping, stripe, cpa = p * 0.25, p * 0.15, (p * 0.029) + 0.30, p * 0.30
-        net = p - (cogs + shipping + stripe + cpa)
-        margin = (net / p) * 100
-        return f"""
-        <div style='background:#0a0a0a; border:1px solid #333; padding:15px; border-radius:8px; font-family:"Montserrat", sans-serif; margin-bottom:15px;'>
-            <div style='color:#888; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:10px; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase;'>Precision Margin Architect</div>
-            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Retail Price:</span> <span style='color:#fff;'>${p:.2f}</span></div>
-            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Sourcing:</span> <span style='color:#dc3545;'>-${cogs:.2f}</span></div>
-            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Shipping:</span> <span style='color:#dc3545;'>-${shipping:.2f}</span></div>
-            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Gateway Fees:</span> <span style='color:#dc3545;'>-${stripe:.2f}</span></div>
-            <div style='display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;'><span>Ad CPA:</span> <span style='color:#dc3545;'>-${cpa:.2f}</span></div>
-            <div style='border-top:1px dashed #444; margin:10px 0;'></div>
-            <div style='display:flex; justify-content:space-between; font-weight:600; font-size:1.1rem;'>
-                <span style='color:#d4af37; font-family:"Cinzel", serif;'>NET PROFIT:</span> <span style='color:#20c997;'>${net:.2f} ({margin:.1f}%)</span>
-            </div>
-        </div>
-        """
-    except: return "<div style='color:#dc3545;'>⚠️ Error calculating margins.</div>"
-
 MARKET_LOGOS = {
     "Amazon": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
     "TikTok Shop": "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg",
@@ -89,7 +67,7 @@ MARKET_LOGOS = {
 }
 
 # ==========================================
-# 3. التصميم الإمبراطوري المتطور (UI Architecture)
+# 3. التصميم الإمبراطوري المتطور 
 # ==========================================
 st.markdown("""
 <style>
@@ -108,7 +86,7 @@ html, body, [data-testid="stAppViewContainer"] { background-color: #050505; colo
 /* الشريط الجانبي واللوجو */
 [data-testid="stSidebar"] { background-color: #080808 !important; border-right: 1px solid #1a1a1a; padding-top: 20px;}
 [data-testid="stSidebarNav"] { display: none; }
-.imperial-logo-box { text-align: center; padding: 20px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 30px; }
+.imperial-logo-box { text-align: center; padding: 20px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 20px; }
 .imperial-logo-wrapper { display: flex; justify-content: center; align-items: baseline; gap: 8px; }
 .imperial-logo { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 700; letter-spacing: 3px; background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;}
 .imperial-ai { font-family: 'Cinzel', serif; font-size: 1.6rem; color: #fff; font-weight: 300; letter-spacing: 2px;}
@@ -142,7 +120,7 @@ div[data-testid="stSidebar"] div.stButton > button:hover { color: #d4af37 !impor
 .bar-value { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 0.8rem; font-weight: bold; font-family: 'Montserrat', sans-serif;}
 .bar-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-family: 'Montserrat', sans-serif;}
 
-/* زر التصدير (Download Button) */
+/* الأزرار والكروت الخاصة بالمنتجات */
 div[data-testid="stDownloadButton"] > button { background-color: #050505 !important; color: #d4af37 !important; border: 1px solid #d4af37 !important; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 6px; padding: 10px; transition: 0.3s; width: 100%; margin-top: 10px;}
 div[data-testid="stDownloadButton"] > button:hover { background-color: #d4af37 !important; color: #000 !important; }
 
@@ -156,6 +134,13 @@ div[data-testid="stDownloadButton"] > button:hover { background-color: #d4af37 !
 
 .panel-box { background: #0d0d0d; border: 1px solid #222; border-radius: 12px; padding: 25px; margin-bottom: 20px;}
 .panel-header { font-family: 'Cinzel', serif; color: #d4af37; font-size: 1.2rem; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px;}
+
+/* تصميم مشغل الفيديو الوهمي */
+.video-player { position: relative; text-align: center; margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid #d4af37; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);}
+.video-player img { width: 100%; filter: brightness(0.7); display: block;}
+.video-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: rgba(212, 175, 55, 0.9); cursor: pointer; transition: 0.3s;}
+.video-play-btn:hover { transform: translate(-50%, -50%) scale(1.1); color: #fff;}
+.video-time { position: absolute; bottom: 10px; right: 10px; font-size: 0.8rem; background: rgba(0,0,0,0.8); color: #fff; padding: 3px 8px; border-radius: 4px; font-family: 'Montserrat', sans-serif;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -179,7 +164,12 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<div style='color:#555; font-size:0.65rem; letter-spacing:2px; margin-bottom:10px; padding-left:5px;'>COMMAND CENTER</div>", unsafe_allow_html=True)
+    # 🔔 جرس التنبيهات الاستباقية (Ghost Alerts)
+    with st.expander("🔔 GHOST ALERTS (2)", expanded=False):
+        st.markdown("<div style='font-size:0.8rem; color:#fff; border-left:2px solid #d4af37; padding-left:10px; margin-bottom:10px; font-family:Montserrat;'>🔥 <b>Surge Detected:</b> 40% spike in Luxury Watches on TikTok Gulf!</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:0.8rem; color:#fff; border-left:2px solid #20c997; padding-left:10px; font-family:Montserrat;'>💡 <b>Market Gap:</b> Competitor 'LuxeTech' just went out of stock. Move now!</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div style='color:#555; font-size:0.65rem; letter-spacing:2px; margin:20px 0 10px 0; padding-left:5px;'>COMMAND CENTER</div>", unsafe_allow_html=True)
     if st.button("📊 Dashboard", use_container_width=True): st.session_state.current_tab = 'dashboard'
     
     st.markdown("<div style='color:#555; font-size:0.65rem; letter-spacing:2px; margin:20px 0 10px 0; padding-left:5px;'>THE 7 PILLARS</div>", unsafe_allow_html=True)
@@ -189,10 +179,9 @@ with st.sidebar:
     if st.button("📈 Growth Engine", use_container_width=True): st.session_state.current_tab = 'growth'
 
 # ==========================================
-# 6. المحتوى الرئيسي (Main Content Area)
+# 6. المحتوى الرئيسي 
 # ==========================================
 
-# --- [1] Dashboard (مع خريطة النبض المباشرة) ---
 if st.session_state.current_tab == 'dashboard':
     st.markdown('<div class="page-title">Command Center</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Global E-Commerce Overview · Live Operations</div>', unsafe_allow_html=True)
@@ -205,7 +194,6 @@ if st.session_state.current_tab == 'dashboard':
     with col3:
         st.markdown('<div class="kpi-card"><div class="kpi-title">Disputes Blocked</div><div class="kpi-value">24</div><div class="kpi-sub">🛡️ $3,120 SAVED TODAY</div></div>', unsafe_allow_html=True)
         
-    # 🌍 خريطة النبض العالمية (Live Heatmap Chart)
     st.markdown("""
     <div class="heatmap-box">
         <div class="heatmap-title">Global Market Demand Pulse <span>● LIVE SYNC</span></div>
@@ -219,7 +207,6 @@ if st.session_state.current_tab == 'dashboard':
     </div>
     """, unsafe_allow_html=True)
 
-# --- [2] Omni-Pulse Radar (مع ميزة التصدير) ---
 elif st.session_state.current_tab == 'radar':
     if st.session_state.radar_step == 'select_platform':
         st.markdown('<div class="page-title">Omni-Pulse Radar</div>', unsafe_allow_html=True)
@@ -294,7 +281,7 @@ elif st.session_state.current_tab == 'radar':
                             st.session_state[f"show_gap_{i}"] = not st.session_state.get(f"show_gap_{i}", False)
                             st.session_state[f"show_profit_{i}"] = False
                     with col_btn2:
-                        if st.button("⚖️ True Profit", key=f"profit_{i}"):
+                        if st.button("⚖️ What-If Profit", key=f"profit_{i}"):
                             st.session_state[f"show_profit_{i}"] = not st.session_state.get(f"show_profit_{i}", False)
                             st.session_state[f"show_gap_{i}"] = False
 
@@ -304,8 +291,32 @@ elif st.session_state.current_tab == 'radar':
                                 st.session_state[f"gap_data_{i}"] = call_gemini_direct(f"Identify ONE major customer complaint for '{item.get('name')}' and state how to fix it to beat competitors. 2 sentences max.")
                         st.info(f"💡 **Market Gap:** {st.session_state[f'gap_data_{i}']}")
 
+                    # 🎛️ محاكي السيناريوهات التفاعلي (What-If Profit Simulator)
                     if st.session_state.get(f"show_profit_{i}"):
-                        st.markdown(calculate_true_profit(item.get('price')), unsafe_allow_html=True)
+                        st.markdown("<div style='background:#0a0a0a; border:1px solid #333; padding:15px; border-radius:8px; margin-bottom:15px;'>", unsafe_allow_html=True)
+                        st.markdown("<div style='color:#d4af37; font-family:\"Cinzel\", serif; margin-bottom:10px; font-size:0.9rem;'>🎛️ Interactive Margin Simulator</div>", unsafe_allow_html=True)
+                        
+                        try:
+                            p = float(re.sub(r'[^\d.]', '', item.get('price', '0')))
+                        except: p = 0.0
+                        
+                        cogs = p * 0.25
+                        gateway = (p * 0.029) + 0.30
+                        
+                        col_s1, col_s2 = st.columns(2)
+                        shipping = col_s1.slider("Shipping ($)", 0.0, float(p), float(p*0.15), key=f"ship_{i}")
+                        cpa = col_s2.slider("Ad CPA ($)", 0.0, float(p), float(p*0.30), key=f"cpa_{i}")
+                        
+                        net = p - (cogs + shipping + gateway + cpa)
+                        margin = (net / p) * 100 if p > 0 else 0
+                        color = "#20c997" if net > 0 else "#dc3545"
+                        
+                        st.markdown(f"""
+                        <div style='border-top:1px dashed #444; margin:10px 0; padding-top:10px; display:flex; justify-content:space-between; font-weight:600; font-size:1.1rem; font-family:"Montserrat", sans-serif;'>
+                            <span style='color:#fff;'>NET PROFIT:</span> <span style='color:{color};'>${net:.2f} ({margin:.1f}%)</span>
+                        </div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                     st.markdown("<hr style='border-color:#222; margin:15px 0;'>", unsafe_allow_html=True)
                     
@@ -314,11 +325,10 @@ elif st.session_state.current_tab == 'radar':
                     visual_style = st.selectbox("", ["Cinematic Luxury 🎬", "Authentic Lifestyle 📸"], key=f"style_{i}", label_visibility="collapsed")
                     
                     st.markdown("<div class='main-btn'>", unsafe_allow_html=True)
-                    if st.button("✦ Render Campaign", key=f"btn_render_{i}", use_container_width=True):
+                    if st.button("✦ Render Campaign Assets", key=f"btn_render_{i}", use_container_width=True):
                         with st.spinner("Crafting Localized Brand..."):
                             prompt = f"Act as a luxury brand strategist. Product: '{item.get('name')}'. Target Market: '{target_market}'. Visual Style: '{visual_style}'. Provide: 1. Brand Name 2. Tagline 3. Ad Copy in the NATIVE language/slang of '{target_market}'."
-                            res = call_gemini_direct(prompt)
-                            st.session_state[f"render_txt_{i}"] = res
+                            st.session_state[f"render_txt_{i}"] = call_gemini_direct(prompt)
                             
                             img_prompt = f"high end commercial photography of {specs}, cinematic studio lighting, dark luxury marble background, 8k resolution" if "Cinematic" in visual_style else f"authentic lifestyle photography of {specs}, user generated content style, realistic, held by a person in a cozy modern home environment, natural sunlight"
                             safe_hero_prompt = urllib.parse.quote_plus(img_prompt)
@@ -335,7 +345,21 @@ elif st.session_state.current_tab == 'radar':
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        # 🌉 زر التصدير (Push to Store)
+                        # 🎬 زر توليد محاكي الفيديو (Video Ad Render)
+                        if st.button("🎬 Render 15s TikTok Video", key=f"btn_vid_{i}"):
+                            with st.spinner("Rendering Frames & Syncing Audio..."):
+                                st.session_state[f"video_rendered_{i}"] = True
+                                
+                        if st.session_state.get(f"video_rendered_{i}"):
+                            st.markdown(f"""
+                            <div class="video-player">
+                                <img src="{st.session_state[f'render_img_{i}']}">
+                                <div class="video-play-btn">▶</div>
+                                <div class="video-time">00:15</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            st.success("✅ Video successfully rendered and synced with Voiceover!")
+                        
                         campaign_data = json.dumps({
                             "WAFEEQ_AI_Export": True,
                             "Product_Name": item.get('name'),
@@ -346,14 +370,13 @@ elif st.session_state.current_tab == 'radar':
                         }, indent=4, ensure_ascii=False)
                         
                         st.download_button(
-                            label="⬇ Download Campaign Assets (JSON)",
+                            label="⬇ Download Campaign (JSON) to Shopify",
                             data=campaign_data,
                             file_name=f"WAFEEQ_Campaign_{item.get('name').replace(' ', '_')}.json",
                             mime="application/json",
                             key=f"dl_{i}"
                         )
 
-# --- [3] Trust Shield, [4] Concierge, [5] Growth Engine (كما هي من الأساس) ---
 elif st.session_state.current_tab == 'shield':
     st.markdown('<div class="page-title">Trust Shield & Defender</div><div class="page-sub">AI-Powered Fraud Prevention & Legal Dispute Management</div>', unsafe_allow_html=True)
     st.markdown("<div class='panel-box'><div class='panel-header'>🚨 Active Dispute (Action Required)</div>", unsafe_allow_html=True)
